@@ -26,7 +26,9 @@ struct HomePage: View {
                         onFilterTap:{viewModel.FilterClicked()})
                 .padding(.top, 8)
                 VStack(alignment: .leading){
-             
+                    ClickFilterList(filters: viewModel.filters) { selectedFilter in
+                        viewModel.ApplyDefaultFilter(filter: selectedFilter)
+                                        }
                 }
                     .padding(.top, 8)
 
