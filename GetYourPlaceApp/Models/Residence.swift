@@ -18,6 +18,19 @@ class Residence: Identifiable {
     var mainImageBase64: String
     var galleryImagesBase64: [String]
     
+    var formattedPrice: String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencySymbol = "$"
+            formatter.maximumFractionDigits = 0
+            
+            return formatter.string(from: NSNumber(value: price)) ?? "$\(price)"
+        }
+    
+    var formattedLocation: String {
+            return "Location: \(location), \(address)"
+        }
+    
     init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, mainImageBase64: String, galleryImagesBase64: [String]) {
         self.name = name
         self.address = address

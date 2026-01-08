@@ -31,6 +31,16 @@ struct HomePage: View {
                                         }
                 }
                     .padding(.top, 8)
+                VStack(alignment: .leading) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(viewModel.residences) { residence in
+                                ResidenceView(residence: residence)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
 
                 Spacer()
             }
