@@ -53,6 +53,12 @@ struct HomePage: View {
                 .padding(.horizontal, 16)
 
                 Spacer()
+                
+                .sheet(isPresented: $viewModel.showingFilters) {
+                        FilterView(filter: $viewModel.currentFilter)
+                            .presentationDetents([.medium, .large])
+                            .presentationDragIndicator(.visible)
+                }
             }
         }
         .navigationBarBackButtonHidden(true)

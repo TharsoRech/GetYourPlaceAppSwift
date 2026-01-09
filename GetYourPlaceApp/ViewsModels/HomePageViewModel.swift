@@ -7,6 +7,8 @@ class HomePageViewModel: ObservableObject {
     @Published var filters: [String] = []
     @Published var defaultFilter: String = ""
     @Published var residences: [Residence] = []
+    @Published var showingFilters = false
+    @Published var currentFilter = ResidenceFilter()
     private var runner = BackgroundTaskRunner<[Residence]>()
     
     private var cancellables = Set<AnyCancellable>()
@@ -29,7 +31,7 @@ class HomePageViewModel: ObservableObject {
         }
     
     func FilterClicked() {
-            print("Filter clicked: \(searchText)")
+          showingFilters.toggle()
         }
     
     func ApplyDefaultFilter(filter : String) {
