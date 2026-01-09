@@ -47,7 +47,7 @@ class HomePageViewModel: ObservableObject {
                 for residence in results {
                     print("🏠 Found: \(residence.name) at \(residence.location)")
                 }
-                
+                self.residences = results;
                 return results
             } catch {
                 print("❌ Error fetching residences: \(error.localizedDescription)")

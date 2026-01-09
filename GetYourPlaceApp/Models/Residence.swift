@@ -13,6 +13,7 @@ class Residence: Identifiable {
     var baths: Int
     var squareFootage: Double
     var hasGarage: Bool
+    var numberOfGarages: Int
     
     // Image properties (Storing as Base64 Strings)
     var mainImageBase64: String
@@ -31,7 +32,25 @@ class Residence: Identifiable {
             return "Location: \(location), \(address)"
         }
     
-    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, mainImageBase64: String, galleryImagesBase64: [String]) {
+    var formattedNumberOfBeds: String {
+            return "\(numberOfBeds) Beds"
+        }
+    
+    var formattedNumberOfRooms: String {
+            return "\(numberOfRooms) Rooms"
+        }
+    
+    var formattedNumberOfGarages: String {
+            return "\(numberOfGarages) Garage"
+        }
+    
+    var formattedNumberOfbaths: String {
+            return "\(baths) Baths"
+        }
+    
+    
+    
+    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool,numberOfGarages:Int, mainImageBase64: String, galleryImagesBase64: [String]) {
         self.name = name
         self.address = address
         self.location = location
@@ -44,5 +63,6 @@ class Residence: Identifiable {
         self.hasGarage = hasGarage
         self.mainImageBase64 = mainImageBase64
         self.galleryImagesBase64 = galleryImagesBase64
+        self.numberOfGarages = numberOfGarages
     }
 }
