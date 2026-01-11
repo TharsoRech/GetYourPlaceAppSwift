@@ -9,7 +9,8 @@ class HomePageViewModel: ObservableObject {
     @Published var residences: [Residence] = []
     @Published var showingFilters = false
     @Published var currentFilter = ResidenceFilter()
-    private var runner = BackgroundTaskRunner<[Residence]>()
+    private var residenceRunner = BackgroundTaskRunner<[Residence]>()
+    private var citiesRunner = BackgroundTaskRunner<[String]>()
     
     private var cancellables = Set<AnyCancellable>()
 
@@ -17,13 +18,13 @@ class HomePageViewModel: ObservableObject {
     private let residenceRepository: ResidenceRepositoryProtocol
         
     init(filterRepository: FilterRepositoryProtocol =  FilterRepository(),
-         residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository() ){
+         residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository()){
         self.filteRepository = filterRepository;
         self.residenceRepository = residenceRepository;
         Task {
               await fetchFilters()
               GetRecentResidences()
-            }
+        }
     }
     
     func PerformSearch() {
@@ -40,21 +41,20 @@ class HomePageViewModel: ObservableObject {
         }
     
     func GetRecentResidences() {
-        runner.runInBackground {
-            do {
-                let results = try await self.residenceRepository.getRecentResidences()
-                
-                // Print the count and details of the results
-                print("✅ Successfully fetched \(results.count) residences")
-                for residence in results {
-                    print("🏠 Found: \(residence.name) at \(residence.location)")
-                }
-                self.residences = results;
-                return results
-            } catch {
-                print("❌ Error fetching residences: \(error.localizedDescription)")
-                return []
+        residenceRunner.runInBackground {
+            let results =  await self.residenceRepository.getRecentResidences()
+            
+            // Print the count and details of the results
+            print("✅ Successfully fetched \(results.count) residences")
+            for residence in results {
+                print("🏠 Found: \(residence.name) at \(residence.location)")
             }
+            
+            await MainActor.run {
+                self.residences = results;
+            }
+            
+            return results
         }
     }
     
