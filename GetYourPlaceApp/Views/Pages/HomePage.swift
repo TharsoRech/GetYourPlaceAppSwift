@@ -28,7 +28,8 @@ struct HomePage: View {
                 CustomSearchBar(
                     text: $viewModel.searchText,
                     onSearchTap: { viewModel.PerformSearch() },
-                    onFilterTap: { viewModel.FilterClicked() }
+                    onFilterTap: { viewModel.FilterClicked() },
+                    isFilterActive: $viewModel.isFilterActive
                 )
                 .padding(.horizontal, 16)
                 
@@ -55,7 +56,10 @@ struct HomePage: View {
                 Spacer()
                 
                 .sheet(isPresented: $viewModel.showingFilters) {
-                        FilterView(filter: $viewModel.currentFilter)
+                        FilterView(filter: $viewModel.currentFilter,
+                                   applyChanges: {
+                                               viewModel.ApplyCustomFilters()
+                                           })
                             .presentationDetents([.medium, .large])
                             .presentationDragIndicator(.visible)
                 }

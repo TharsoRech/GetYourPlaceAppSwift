@@ -20,5 +20,5 @@ struct DynamicPickerSection: View {
 }
 
 #Preview {
-    DynamicPickerSection(filter: .constant(ResidenceFilter()))
+    DynamicPickerSection(filter:.constant(.mock))
 }

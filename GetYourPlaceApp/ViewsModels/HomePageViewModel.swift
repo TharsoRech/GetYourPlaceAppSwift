@@ -8,9 +8,12 @@ class HomePageViewModel: ObservableObject {
     @Published var defaultFilter: String = ""
     @Published var residences: [Residence] = []
     @Published var showingFilters = false
-    @Published var currentFilter = ResidenceFilter()
+    @Published var currentFilter: ResidenceFilter
+    @Published var isFilterActive: Bool
     private var residenceRunner = BackgroundTaskRunner<[Residence]>()
     private var citiesRunner = BackgroundTaskRunner<[String]>()
+    private var defaultFilterRunner = BackgroundTaskRunner<[String]>()
+    private var customFilterRunner = BackgroundTaskRunner<ResidenceFilter>()
     
     private var cancellables = Set<AnyCancellable>()
 
@@ -21,9 +24,12 @@ class HomePageViewModel: ObservableObject {
          residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository()){
         self.filteRepository = filterRepository;
         self.residenceRepository = residenceRepository;
+        self.isFilterActive = false;
+        self.currentFilter = ResidenceFilter();
         Task {
-              await fetchFilters()
+              fetchFilters()
               GetRecentResidences()
+              fetchCustomFilters()
         }
     }
     
@@ -37,8 +43,26 @@ class HomePageViewModel: ObservableObject {
     
     func ApplyDefaultFilter(filter : String) {
             defaultFilter = filter
-            print("Default Filter clicked: \(defaultFilter)")
+            print("Custom Filter clicked: \(defaultFilter)")
         }
+    
+    func ApplyCustomFilters() {
+        self.isFilterActive = (currentFilter.selections.count) > 0
+        
+        print("--- 🔍 Applying Filters ---")
+            if currentFilter.selections.isEmpty {
+                print("No active selections.")
+            } else {
+                for (category, selection) in currentFilter.selections {
+                    print("📍 \(category): \(selection)")
+                }
+            }
+            
+            // 3. Log numeric values
+            print("💰 Max Price: \(currentFilter.maxPrice)")
+            print("📏 Max SqFt: \(currentFilter.maxSquareFootage)")
+            print("---------------------------")
+     }
     
     func GetRecentResidences() {
         residenceRunner.runInBackground {
@@ -58,8 +82,28 @@ class HomePageViewModel: ObservableObject {
         }
     }
     
-    func fetchFilters() async {
-        self.filters = await filteRepository.getDefaultFilters()
+    func fetchFilters() {
+        defaultFilterRunner.runInBackground {
+            let results = await self.filteRepository.getDefaultFilters()
+            
+            await MainActor.run {
+                self.filters = results
+            }
+            
+            return results;
+        }
+    }
+
+    func fetchCustomFilters() {
+        customFilterRunner.runInBackground {
+            let results = await self.filteRepository.getCustomFilters()
+            
+            await MainActor.run {
+                self.currentFilter = results
+            }
+            
+            return results;
+        }
     }
      
 }

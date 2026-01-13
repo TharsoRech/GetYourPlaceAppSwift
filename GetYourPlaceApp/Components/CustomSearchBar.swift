@@ -7,6 +7,8 @@ struct CustomSearchBar: View {
     
     var onFilterTap: () -> Void
     
+    @Binding var isFilterActive: Bool
+    
     var body: some View {
         VStack{
             HStack(spacing: 12) {
@@ -33,7 +35,7 @@ struct CustomSearchBar: View {
                 Button(action: {
                     onFilterTap()
                 }) {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
+                    Image(systemName: isFilterActive ? "line.3.horizontal.decrease.circle.fill": "line.3.horizontal.decrease.circle")
                         .foregroundColor(.white)
                         .font(.system(size: 28))
                 }
@@ -48,5 +50,5 @@ struct CustomSearchBar: View {
 }
 
 #Preview {
-    CustomSearchBar(text: .constant("Example Text"),onSearchTap:{}, onFilterTap: {})
+    CustomSearchBar(text: .constant("Example Text"),onSearchTap:{}, onFilterTap: {},isFilterActive: .constant(false))
 }
