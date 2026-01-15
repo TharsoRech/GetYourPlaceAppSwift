@@ -15,42 +15,27 @@ class Residence: Identifiable {
     var hasGarage: Bool
     var numberOfGarages: Int
     
-    // Image properties (Storing as Base64 Strings)
+    // Image properties
     var mainImageBase64: String
     var galleryImagesBase64: [String]
     
+    // MARK: - Formatters
     var formattedPrice: String {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.currencySymbol = "$"
-            formatter.maximumFractionDigits = 0
-            
-            return formatter.string(from: NSNumber(value: price)) ?? "$\(price)"
-        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = "$"
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: price)) ?? "$\(price)"
+    }
     
-    var formattedLocation: String {
-            return "Location: \(location), \(address)"
-        }
+    var formattedLocation: String { "Location: \(location), \(address)" }
+    var formattedNumberOfBeds: String { "\(numberOfBeds) Beds" }
+    var formattedNumberOfRooms: String { "\(numberOfRooms) Rooms" }
+    var formattedNumberOfGarages: String { "\(numberOfGarages) Garage" }
+    var formattedNumberOfbaths: String { "\(baths) Baths" }
     
-    var formattedNumberOfBeds: String {
-            return "\(numberOfBeds) Beds"
-        }
-    
-    var formattedNumberOfRooms: String {
-            return "\(numberOfRooms) Rooms"
-        }
-    
-    var formattedNumberOfGarages: String {
-            return "\(numberOfGarages) Garage"
-        }
-    
-    var formattedNumberOfbaths: String {
-            return "\(baths) Baths"
-        }
-    
-    
-    
-    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool,numberOfGarages:Int, mainImageBase64: String, galleryImagesBase64: [String]) {
+    // MARK: - Initializer
+    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int, mainImageBase64: String, galleryImagesBase64: [String]) {
         self.name = name
         self.address = address
         self.location = location
@@ -61,8 +46,32 @@ class Residence: Identifiable {
         self.baths = baths
         self.squareFootage = squareFootage
         self.hasGarage = hasGarage
+        self.numberOfGarages = numberOfGarages
         self.mainImageBase64 = mainImageBase64
         self.galleryImagesBase64 = galleryImagesBase64
-        self.numberOfGarages = numberOfGarages
+    }
+    
+    // MARK: - Mock Data
+    static var mock: Residence {
+        Residence(
+            name: "Modern Villa",
+            address: "123 luxury Way",
+            location: "Los Angeles, CA",
+            type: "House",
+            price: 2500000.0,
+            numberOfRooms: 8,
+            numberOfBeds: 4,
+            baths: 3,
+            squareFootage: 3500.0,
+            hasGarage: true,
+            numberOfGarages: 1,
+            mainImageBase64: "", // Use empty string if asset helper isn't available
+            galleryImagesBase64: []
+        )
+    }
+    
+    // Used for the Skeleton View loop
+    static var mocks: [Residence] {
+        [mock, mock, mock]
     }
 }

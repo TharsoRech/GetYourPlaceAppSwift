@@ -10,6 +10,12 @@ class HomePageViewModel: ObservableObject {
     @Published var showingFilters = false
     @Published var currentFilter: ResidenceFilter
     @Published var isFilterActive: Bool
+    @Published var selectedTab = "home"
+    @Published var isLoading = false
+    @Published var isFetchingMore = false
+    
+    private var currentPage = 1
+    private var canLoadMore = true
     private var residenceRunner = BackgroundTaskRunner<[Residence]>()
     private var citiesRunner = BackgroundTaskRunner<[String]>()
     private var defaultFilterRunner = BackgroundTaskRunner<[String]>()
@@ -65,7 +71,9 @@ class HomePageViewModel: ObservableObject {
      }
     
     func GetRecentResidences() {
+        
         residenceRunner.runInBackground {
+            self.isLoading = true
             let results =  await self.residenceRepository.getRecentResidences()
             
             // Print the count and details of the results
@@ -78,6 +86,7 @@ class HomePageViewModel: ObservableObject {
                 self.residences = results;
             }
             
+            self.isLoading = false
             return results
         }
     }
@@ -105,6 +114,37 @@ class HomePageViewModel: ObservableObject {
             return results;
         }
     }
+    
+    func loadNextPage() {
+            // Prevent multiple simultaneous loads or loading when no data is left
+            guard !isFetchingMore && !isLoading && canLoadMore else { return }
+            
+            residenceRunner.runInBackground {
+                await MainActor.run {
+                    self.isLoading = true;
+                }
+                
+                await MainActor.run { self.isFetchingMore = true }
+                
+                let nextPage = self.currentPage + 1
+                
+                // repository call must support page parameter: getRecentResidences(page:)
+                let results = await self.residenceRepository.getRecentResidences()
+                
+                await MainActor.run {
+                    if results.isEmpty {
+                        self.canLoadMore = false
+                    } else {
+                        self.residences.append(contentsOf: results)
+                        self.currentPage = nextPage
+                    }
+                    self.isFetchingMore = false
+                    self.isLoading = false;
+                }
+              
+                return results
+            }
+        }
      
 }
 
