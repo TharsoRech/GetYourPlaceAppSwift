@@ -104,5 +104,34 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
             )
         ]
     }
+    
+    func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) -> [Residence] {
+        return residences.filter { residence in
+            
+            // Price and Square Footage
+            guard residence.price <= filter.maxPrice else { return false }
+            guard residence.squareFootage <= filter.maxSquareFootage else { return false }
+            
+            // City Match
+            if !filter.citySelected.isEmpty && filter.citySelected != "All" {
+                let match = residence.location.localizedCaseInsensitiveContains(filter.citySelected)
+                if !match { return false }
+            }
+            
+            // Property Type match
+            if let type = filter.selections["Type"], type != "All", residence.type != type {
+                return false
+            }
+            
+            // Using our Matcher Utility for numeric strings
+            let s = filter.selections
+            guard FilterMatcher.check(residence.numberOfBeds, satisfies: s["Beds"]) else { return false }
+            guard FilterMatcher.check(residence.numberOfRooms, satisfies: s["Rooms"]) else { return false }
+            guard FilterMatcher.check(residence.baths, satisfies: s["Baths"]) else { return false }
+            guard FilterMatcher.check(residence.numberOfGarages, satisfies: s["Garage"]) else { return false }
+            
+            return true
+        }
+    }
 }
 

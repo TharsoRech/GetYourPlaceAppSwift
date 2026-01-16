@@ -5,35 +5,32 @@ struct ResidenceListView: View {
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 16) {
+            LazyVStack(spacing: 16) {
                 if viewModel.isLoading && viewModel.residences.isEmpty {
                     skeletonStack
                 } else {
                     residenceList // Extracted logic
                     
                     if viewModel.isFetchingMore{
-                        ProgressView()
-                            .tint(.white)
-                            .padding()
+                        skeletonStack
                     }
                 }
             }
             .padding(.vertical, 8)
             .padding(.bottom, 100)
         }
-        .padding(.horizontal, 16)
     }
     
     // MARK: - Sub-views
     
     private var residenceList: some View {
-        // Breaking the enumerated array into a separate variable helps the compiler
-        let enumeratedResidences = Array(viewModel.residences.enumerated())
-        
-        return ForEach(enumeratedResidences, id: \.element.id) { index, residence in
+        ForEach(viewModel.residences) { residence in
             ResidenceView(residence: residence)
                 .onAppear {
-                    loadMoreIfNeeded(at: index)
+                    // Check if this is the last item to trigger pagination
+                    if residence.id == viewModel.residences.last?.id {
+                        viewModel.loadNextPage()
+                    }
                 }
         }
     }
@@ -50,11 +47,13 @@ struct ResidenceListView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.3))
                     .frame(height: 200)
+                    .padding(.horizontal,16)
                     .shimmering()
                 
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 150, height: 20)
+                    .padding(.horizontal,16)
                     .shimmering()
             }
             .padding(.vertical, 12)

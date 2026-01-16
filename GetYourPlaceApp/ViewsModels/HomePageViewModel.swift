@@ -84,9 +84,9 @@ class HomePageViewModel: ObservableObject {
             
             await MainActor.run {
                 self.residences = results;
+                self.isLoading = false
             }
             
-            self.isLoading = false
             return results
         }
     }

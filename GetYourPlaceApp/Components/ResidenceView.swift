@@ -5,7 +5,7 @@ struct ResidenceView: View {
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(alignment: .leading) {
                 // 1. Check for the image
                 if let mainImg = residence.mainImageBase64.toSwiftUIImage() {
                     mainImg

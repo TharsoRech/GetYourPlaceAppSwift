@@ -31,7 +31,6 @@ struct HomePage: View {
                     onFilterTap: { viewModel.FilterClicked() },
                     isFilterActive: $viewModel.isFilterActive
                 )
-                .padding(.horizontal, 16)
                 
                 // 3. Filters
                 VStack(alignment: .leading) {
@@ -57,7 +56,6 @@ struct HomePage: View {
                 .padding(.vertical, 4)
                 .padding(.horizontal, 16)
                 .cornerRadius(128)
-                .padding(.horizontal)
                 .padding(.bottom, 10)
             }
         }
