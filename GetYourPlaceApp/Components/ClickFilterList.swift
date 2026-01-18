@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ClickFilterList: View {
     var filters: [String] = []
-    @State private var selectedFilter: String? = "All" // Track selection here
+    @State private var selectedFilter: String? = "Newest" // Track selection here
     var onClickFilter: (String) -> Void
     
     var body: some View {

@@ -80,6 +80,8 @@ struct ResidenceView: View {
             squareFootage: 3500.0,
             hasGarage: true,
             numberOfGarages: 1,
+            rating:5.0,
+            createdAt: Date(),
             mainImageBase64: "house1".asAssetBase64,
             galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64]
         )

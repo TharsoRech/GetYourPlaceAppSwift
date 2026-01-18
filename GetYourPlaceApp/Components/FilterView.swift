@@ -60,6 +60,7 @@ struct FilterView: View {
 
                         Button(action: {
                             // Only now do we save the changes to the main state
+                            draftFilter.isApplyed = true;
                             filter = draftFilter
                             applyChanges()
                             dismiss()
@@ -100,6 +101,7 @@ struct FilterView: View {
         draftFilter.maxSquareFootage = 10000
         draftFilter.citySelected = ""
         draftFilter.selections = [:]
+        draftFilter.isApplyed = false
     }
 }
 #Preview {

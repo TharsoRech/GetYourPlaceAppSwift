@@ -7,6 +7,7 @@ struct ResidenceFilter {
     var pickerOptions: [String: [String]] = [:]
     var cities: [String] = []
     var citySelected: String = ""
+    var isApplyed: Bool = false
     
     static var mock: ResidenceFilter {
         var filter = ResidenceFilter()

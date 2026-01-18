@@ -13,6 +13,7 @@ class HomePageViewModel: ObservableObject {
     @Published var selectedTab = "home"
     @Published var isLoading = false
     @Published var isFetchingMore = false
+    @Published var allResidences: [Residence] = []
     
     private var currentPage = 1
     private var canLoadMore = true
@@ -50,24 +51,45 @@ class HomePageViewModel: ObservableObject {
     func ApplyDefaultFilter(filter : String) {
             defaultFilter = filter
             print("Custom Filter clicked: \(defaultFilter)")
+            OrderResidences()
         }
     
+    func OrderResidences() {
+        self.isLoading = true
+        switch defaultFilter {
+        case "Price":
+            residences.sort { $0.price < $1.price }
+        case "Newest":
+            // Note: Requires a 'createdAt' date property in Residence model
+            residences.sort { $0.createdAt > $1.createdAt }
+            print("Sorting by Newest")
+        case "Rating":
+            // Note: Requires a 'rating' property in Residence model
+            residences.sort { $0.rating > $1.rating }
+            print("Sorting by Rating")
+        case "Distance":
+            // Note: Requires location coordinates and user current location this can be implemented on the future
+            print("Sorting by Distance")
+        case "Category":
+            residences.sort { $0.type < $1.type }
+        default:
+            residences.sort { $0.createdAt > $1.createdAt }
+            break
+        }
+        self.isLoading = false
+    }
+    
     func ApplyCustomFilters() {
-        self.isFilterActive = (currentFilter.selections.count) > 0
-        
-        print("--- 🔍 Applying Filters ---")
-            if currentFilter.selections.isEmpty {
-                print("No active selections.")
-            } else {
-                for (category, selection) in currentFilter.selections {
-                    print("📍 \(category): \(selection)")
-                }
-            }
-            
-            // 3. Log numeric values
-            print("💰 Max Price: \(currentFilter.maxPrice)")
-            print("📏 Max SqFt: \(currentFilter.maxSquareFootage)")
-            print("---------------------------")
+        self.isFilterActive = !currentFilter.selections.isEmpty
+
+        if(self.currentFilter.isApplyed){
+            FilterResidences();
+            print("filter set to Residences")
+        }
+        else{
+            self.residences = self.allResidences;
+            print("filter set to allResidences")
+        }
      }
     
     func GetRecentResidences() {
@@ -83,8 +105,10 @@ class HomePageViewModel: ObservableObject {
             }
             
             await MainActor.run {
+                self.allResidences = results;
                 self.residences = results;
-                self.isLoading = false
+                self.isLoading = false;
+                self.OrderResidences();
             }
             
             return results
@@ -114,6 +138,31 @@ class HomePageViewModel: ObservableObject {
             return results;
         }
     }
+    
+    func FilterResidences() {
+        
+        residenceRunner.runInBackground {
+            await MainActor.run {
+                self.isLoading = true
+            }
+  
+            let results =  await self.residenceRepository.filterResidences(self.allResidences, with: self.currentFilter)
+            
+            // Print the count and details of the results
+            print("✅ Successfully fetched \(results.count) residences")
+            for residence in results {
+                print("🏠 Found: \(residence.name) at \(residence.location)")
+            }
+            
+            await MainActor.run {
+                self.residences = results;
+                self.isLoading = false
+            }
+            
+            return results
+        }
+    }
+    
     
     func loadNextPage() {
             // Prevent multiple simultaneous loads or loading when no data is left

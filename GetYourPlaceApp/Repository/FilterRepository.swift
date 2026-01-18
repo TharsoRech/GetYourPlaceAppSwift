@@ -3,7 +3,7 @@ class FilterRepository: FilterRepositoryProtocol {
         // Simulating API delay
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
-        return ["Price", "Distance", "Rating", "Newest", "Category"]
+        return ["Newest","Price", "Rating", "Category"]
     }
     
     func getCustomFilters() async -> ResidenceFilter {

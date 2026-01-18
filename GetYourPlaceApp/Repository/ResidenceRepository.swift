@@ -1,3 +1,4 @@
+import Foundation
 class ResidenceRepository: ResidenceRepositoryProtocol {
     func getRecentResidences() async -> [Residence] {
         // Simulando delay de rede
@@ -16,6 +17,8 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 3500.0,
                 hasGarage: true,
                 numberOfGarages: 1,
+                rating: 5.0,
+                createdAt: Date().addingTimeInterval(-10000),
                 mainImageBase64: "house1".asAssetBase64, // Nome do Asset
                 galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64]
             ),
@@ -31,6 +34,8 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 850.0,
                 hasGarage: false,
                 numberOfGarages: 1,
+                rating: 3.0,
+                createdAt: Date().addingTimeInterval(-20000),
                 mainImageBase64: "house2".asAssetBase64,
                 galleryImagesBase64: ["house2".asAssetBase64]
             ),
@@ -46,6 +51,8 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 1800.0,
                 hasGarage: true,
                 numberOfGarages: 1,
+                rating: 4.0,
+                createdAt: Date(),
                 mainImageBase64: "house3".asAssetBase64,
                 galleryImagesBase64: []
             )
@@ -69,6 +76,8 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 3500.0,
                 hasGarage: true,
                 numberOfGarages: 1,
+                rating: 4.0,
+                createdAt: Date().addingTimeInterval(-10000),
                 mainImageBase64: "house1".asAssetBase64, // Nome do Asset
                 galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64]
             ),
@@ -84,6 +93,8 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 850.0,
                 hasGarage: false,
                 numberOfGarages: 1,
+                rating: 4.0,
+                createdAt: Date().addingTimeInterval(-20000),
                 mainImageBase64: "house2".asAssetBase64,
                 galleryImagesBase64: ["house2".asAssetBase64]
             ),
@@ -99,13 +110,15 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 squareFootage: 1800.0,
                 hasGarage: true,
                 numberOfGarages: 1,
+                rating: 4.0,
+                createdAt: Date(),
                 mainImageBase64: "house3".asAssetBase64,
                 galleryImagesBase64: []
             )
         ]
     }
     
-    func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) -> [Residence] {
+    func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) async -> [Residence] {
         return residences.filter { residence in
             
             // Price and Square Footage
