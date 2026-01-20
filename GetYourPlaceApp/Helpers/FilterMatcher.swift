@@ -1,22 +1,25 @@
 import Foundation
-enum FilterMatcher {
-    /// Checks if a value satisfies a filter string (e.g., "3" or "4+")
-    static func check(_ value: Int, satisfies filterValue: String?) -> Bool {
-        // 1. If filter is nil, empty, or "All", it's a match
-        guard let filter = filterValue, !filter.isEmpty, filter != "All" else {
+struct FilterMatcher {
+    static func check(_ value: Int, satisfies requirement: String?) -> Bool {
+        guard let requirement = requirement, requirement != "All" else {
             return true
         }
         
-        // 2. Handle "plus" logic (e.g., "4+")
-        if filter.contains("+") {
-            let numericPart = filter.trimmingCharacters(in: CharacterSet.decimalDigits.inverted)
+        // Handle "None" as exactly 0
+        if requirement == "None" {
+            return value == 0
+        }
+        
+        // Handle "4+" (or any number with a plus)
+        if requirement.contains("+") {
+            let numericPart = requirement.replacingOccurrences(of: "+", with: "")
             if let target = Int(numericPart) {
                 return value >= target
             }
         }
         
-        // 3. Handle exact match
-        if let target = Int(filter) {
+        // Handle exact numeric match (e.g., "1", "2", "3")
+        if let target = Int(requirement) {
             return value == target
         }
         

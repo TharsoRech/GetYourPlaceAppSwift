@@ -120,28 +120,33 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
     
     func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) async -> [Residence] {
         return residences.filter { residence in
-            
-            // Price and Square Footage
-            guard residence.price <= filter.maxPrice else { return false }
-            guard residence.squareFootage <= filter.maxSquareFootage else { return false }
-            
-            // City Match
-            if !filter.citySelected.isEmpty && filter.citySelected != "All" {
-                let match = residence.location.localizedCaseInsensitiveContains(filter.citySelected)
-                if !match { return false }
-            }
-            
-            // Property Type match
-            if let type = filter.selections["Type"], type != "All", residence.type != type {
-                return false
-            }
-            
-            // Using our Matcher Utility for numeric strings
             let s = filter.selections
-            guard FilterMatcher.check(residence.numberOfBeds, satisfies: s["Beds"]) else { return false }
-            guard FilterMatcher.check(residence.numberOfRooms, satisfies: s["Rooms"]) else { return false }
-            guard FilterMatcher.check(residence.baths, satisfies: s["Baths"]) else { return false }
-            guard FilterMatcher.check(residence.numberOfGarages, satisfies: s["Garage"]) else { return false }
+            
+            // Iterate through every active filter in the selections dictionary
+            for (key, selectedValue) in s {
+                // Skip filtering if "All" is selected or if the value is empty
+                guard selectedValue != "All", !selectedValue.isEmpty else { continue }
+                
+                let isMatch: Bool
+                
+                switch key {
+                case "Type":
+                    isMatch = residence.type == selectedValue
+                case "Beds":
+                    isMatch = FilterMatcher.check(residence.numberOfBeds, satisfies: selectedValue)
+                case "Rooms":
+                    isMatch = FilterMatcher.check(residence.numberOfRooms, satisfies: selectedValue)
+                case "Baths":
+                    isMatch = FilterMatcher.check(residence.baths, satisfies: selectedValue)
+                case "Garage":
+                    isMatch = FilterMatcher.check(residence.numberOfGarages, satisfies: selectedValue)
+                default:
+                    isMatch = true // Ignore unknown keys
+                }
+                
+                // If any single criteria fails, the whole residence is excluded
+                if !isMatch { return false }
+            }
             
             return true
         }

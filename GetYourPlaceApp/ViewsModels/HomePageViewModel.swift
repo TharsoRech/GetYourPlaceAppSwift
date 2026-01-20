@@ -79,15 +79,16 @@ class HomePageViewModel: ObservableObject {
         self.isLoading = false
     }
     
-    func ApplyCustomFilters() {
-        self.isFilterActive = !currentFilter.selections.isEmpty
+    func ApplyCustomFilters(isApplied : Bool) {
+        self.isFilterActive = isApplied
 
-        if(self.currentFilter.isApplyed){
+        if(isApplied){
             FilterResidences();
             print("filter set to Residences")
         }
         else{
             self.residences = self.allResidences;
+            OrderResidences()
             print("filter set to allResidences")
         }
      }

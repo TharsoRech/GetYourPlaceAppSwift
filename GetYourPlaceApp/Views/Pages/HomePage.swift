@@ -61,7 +61,9 @@ struct HomePage: View {
         }
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $viewModel.showingFilters) {
-            FilterView(filter: $viewModel.currentFilter, applyChanges: { viewModel.ApplyCustomFilters() })
+            FilterView(filter: $viewModel.currentFilter) { isApplied in
+                    viewModel.ApplyCustomFilters(isApplied: isApplied)
+                }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }

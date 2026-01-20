@@ -16,10 +16,10 @@ class FilterRepository: FilterRepositoryProtocol {
             selections: [:],
             pickerOptions: [
                 "Type": ["All", "Apartment", "House", "Villa", "Studio"],
-                "Beds": ["1", "2", "3", "4+"],
-                "Rooms": ["1", "2", "3", "4+"],
-                "Garage": ["1", "2", "3", "4+"],
-                "Baths": ["1", "2", "3", "4+"]
+                "Beds": ["None","1", "2", "3", "4+"],
+                "Rooms": ["None","1", "2", "3", "4+"],
+                "Garage": ["None","1", "2", "3", "4+"],
+                "Baths": ["None","1", "2", "3", "4+"]
             ],
             cities: ["New York", "Rio de Janeiro", "Budapest", "Atlanta", "London"]
         )
