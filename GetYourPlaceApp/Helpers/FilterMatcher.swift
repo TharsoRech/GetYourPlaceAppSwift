@@ -1,13 +1,8 @@
 import Foundation
 struct FilterMatcher {
     static func check(_ value: Int, satisfies requirement: String?) -> Bool {
-        guard let requirement = requirement, requirement != "All" else {
+        guard let requirement = requirement, requirement != "All",requirement == "None" else {
             return true
-        }
-        
-        // Handle "None" as exactly 0
-        if requirement == "None" {
-            return value == 0
         }
         
         // Handle "4+" (or any number with a plus)
