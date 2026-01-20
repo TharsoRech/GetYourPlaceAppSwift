@@ -11,7 +11,7 @@ class FilterRepository: FilterRepositoryProtocol {
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
         return ResidenceFilter(
-            maxPrice: 5000,
+            maxPrice: 10000000,
             maxSquareFootage: 2000,
             selections: [:],
             pickerOptions: [

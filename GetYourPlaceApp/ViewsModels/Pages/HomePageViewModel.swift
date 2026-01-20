@@ -41,8 +41,42 @@ class HomePageViewModel: ObservableObject {
     }
     
     func PerformSearch() {
-            print("Searching for: \(searchText)")
+        print("Searching for: \(searchText)")
+        
+        // 1. If search text is empty and no filters are active, show everything
+        guard !searchText.isEmpty else {
+            if isFilterActive {
+                FilterResidences() // Re-apply custom filters if they exist
+            } else {
+                self.residences = self.allResidences
+                OrderResidences()
+            }
+            return
         }
+        
+        // 2. Filter the existing data based on text
+        // We filter from 'allResidences' to ensure we search the full dataset
+        let filtered = allResidences.filter { residence in
+            let nameMatch = residence.name.localizedCaseInsensitiveContains(searchText)
+            let addressMatch = residence.address.localizedCaseInsensitiveContains(searchText)
+            let locationMatch = residence.location.localizedCaseInsensitiveContains(searchText)
+            
+            return nameMatch || addressMatch || locationMatch
+        }
+        
+        // 3. Update the UI
+        Task { @MainActor in
+            self.residences = filtered
+            
+            // 4. If custom filters (Baths, Beds, etc.) are also active,
+            // we should narrow down the search results further
+            if isFilterActive {
+                self.residences = await self.residenceRepository.filterResidences(self.residences, with: self.currentFilter)
+            }
+            
+            OrderResidences()
+        }
+    }
     
     func FilterClicked() {
           showingFilters.toggle()
@@ -84,6 +118,7 @@ class HomePageViewModel: ObservableObject {
 
         if(isApplied){
             FilterResidences();
+            OrderResidences();
             print("filter set to Residences")
         }
         else{

@@ -120,15 +120,28 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
     
     func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) async -> [Residence] {
         return residences.filter { residence in
-            let s = filter.selections
             
-            // Iterate through every active filter in the selections dictionary
-            for (key, selectedValue) in s {
-                // Skip filtering if "All" is selected or if the value is empty
+            // --- 1. Property-based Filters ---
+            
+            // Price (Only if maxPrice is set above 0)
+            if filter.maxPrice > 0 && residence.price > filter.maxPrice { return false }
+            
+            // Square Footage
+            if filter.maxSquareFootage > 0 && residence.squareFootage > filter.maxSquareFootage { return false }
+            
+            // City Match
+            if !filter.citySelected.isEmpty && filter.citySelected != "All" {
+                if !residence.location.localizedCaseInsensitiveContains(filter.citySelected) {
+                    return false
+                }
+            }
+            
+            // --- 2. Selection Dictionary Filters ---
+            
+            for (key, selectedValue) in filter.selections {
                 guard selectedValue != "All", !selectedValue.isEmpty else { continue }
                 
                 let isMatch: Bool
-                
                 switch key {
                 case "Type":
                     isMatch = residence.type == selectedValue
@@ -141,10 +154,9 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
                 case "Garage":
                     isMatch = FilterMatcher.check(residence.numberOfGarages, satisfies: selectedValue)
                 default:
-                    isMatch = true // Ignore unknown keys
+                    isMatch = true
                 }
                 
-                // If any single criteria fails, the whole residence is excluded
                 if !isMatch { return false }
             }
             

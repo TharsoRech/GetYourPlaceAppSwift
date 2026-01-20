@@ -2,45 +2,54 @@ import SwiftUI
 
 struct CustomSearchBar: View {
     @Binding var text: String
-    
     var onSearchTap: () -> Void
-    
     var onFilterTap: () -> Void
-    
     @Binding var isFilterActive: Bool
     
     var body: some View {
-        VStack{
+        VStack {
             HStack(spacing: 12) {
-                Button(action: {
-                                onSearchTap()
-                            }) {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                    .font(.system(size: 24))
-                            }
-                TextField("",
-                          text: $text,
-                          prompt: Text("Search your home")
-                    .foregroundColor(.gray)
-                )
-                .submitLabel(.search)
-                                .onSubmit {
-                                    onSearchTap()
-                                }
-                .padding()
-                .foregroundColor(.white)
+                // Search Icon Button
+                Button(action: onSearchTap) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 20))
+                }
+                
+                // Text Field with Clear Button
+                HStack {
+                    TextField("",
+                              text: $text,
+                              prompt: Text("Search your home").foregroundColor(.gray)
+                    )
+                    .submitLabel(.search)
+                    .onSubmit { onSearchTap() }
+                    .foregroundColor(.white)
+                    
+                    // The "Clear" Button
+                    if !text.isEmpty {
+                        Button(action: {
+                            self.text = ""
+                            onSearchTap() // Optional: refresh search when cleared
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .padding(.trailing, 4)
+                        }
+                    }
+                }
+                .padding(10)
                 .background(Color.white.opacity(0.1))
                 .cornerRadius(10)
-                Button(action: {
-                    onFilterTap()
-                }) {
+                
+                // Filter Button
+                Button(action: onFilterTap) {
                     Image(systemName: isFilterActive ? "line.3.horizontal.decrease.circle.fill": "line.3.horizontal.decrease.circle")
                         .foregroundColor(.white)
                         .font(.system(size: 28))
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 12)
             .padding(.vertical, 12)
             .background(Color.white.opacity(0.1))
             .cornerRadius(15)
