@@ -2,9 +2,11 @@ import SwiftUI
 
 struct HomePage: View {
     @StateObject var viewModel: HomePageViewModel
+    @State var selectedTab: String
 
     init(viewModel: HomePageViewModel = HomePageViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.selectedTab = "home"
     }
 
     var body: some View {
@@ -12,10 +14,10 @@ struct HomePage: View {
             Color(red: 0.1, green: 0.1, blue: 0.1)
                 .ignoresSafeArea()
             
-            if(viewModel.selectedTab == "home"){
+            if(selectedTab == "home"){
                 SearchResidenceView(viewModel:viewModel);
             }
-            else if(viewModel.selectedTab == "rents"){
+            else if(selectedTab == "rents"){
                 MyRents()
             }
 
@@ -23,11 +25,11 @@ struct HomePage: View {
             VStack {
                 Spacer()
                 HStack(spacing: 0) {
-                    MenuItem(icon: "house.fill", label: "Home", isSelected: viewModel.selectedTab == "home") { viewModel.selectedTab = "home" }
-                    MenuItem(icon: "key.fill", label: "My Rents", isSelected: viewModel.selectedTab == "rents") { viewModel.selectedTab = "rents" }
-                    MenuItem(icon: "heart.fill", label: "Saved", isSelected: viewModel.selectedTab == "heart") { viewModel.selectedTab = "heart" }
-                    MenuItem(icon: "bubble.left.fill", label: "Chat", isSelected: viewModel.selectedTab == "chat") { viewModel.selectedTab = "chat" }
-                    MenuItem(icon: "person.circle.fill", label: "Profile", isSelected: viewModel.selectedTab == "profile") { viewModel.selectedTab = "profile" }
+                    MenuItem(icon: "house.fill", label: "Home", isSelected: selectedTab == "home") { selectedTab = "home" }
+                    MenuItem(icon: "key.fill", label: "My Rents", isSelected: selectedTab == "rents") { selectedTab = "rents" }
+                    MenuItem(icon: "heart.fill", label: "Saved", isSelected: selectedTab == "heart") { selectedTab = "heart" }
+                    MenuItem(icon: "bubble.left.fill", label: "Chat", isSelected: selectedTab == "chat") { selectedTab = "chat" }
+                    MenuItem(icon: "person.circle.fill", label: "Profile", isSelected: selectedTab == "profile") { selectedTab = "profile" }
                 }
                 .padding(.vertical, 4)
                 .padding(.horizontal, 16)

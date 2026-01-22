@@ -32,7 +32,12 @@ struct SearchResidenceView: View {
             }.padding(.horizontal, 8)
 
             // 4. Residence List with Skeleton Logic
-            ResidenceListView(viewModel: viewModel)
+            ResidenceListView(
+                residences: viewModel.residences,
+                isLoading: viewModel.isLoading,
+                isFetchingMore: viewModel.isFetchingMore,
+                onLoadMore: { viewModel.loadNextPage() }
+            )
         }
         .sheet(isPresented: $viewModel.showingFilters) {
             FilterView(filter: $viewModel.currentFilter) { isApplied in

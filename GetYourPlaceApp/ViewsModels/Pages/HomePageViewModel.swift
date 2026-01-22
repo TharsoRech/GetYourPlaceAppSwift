@@ -10,7 +10,6 @@ class HomePageViewModel: ObservableObject {
     @Published var showingFilters = false
     @Published var currentFilter: ResidenceFilter
     @Published var isFilterActive: Bool
-    @Published var selectedTab = "home"
     @Published var isLoading = false
     @Published var isFetchingMore = false
     @Published var allResidences: [Residence] = []
