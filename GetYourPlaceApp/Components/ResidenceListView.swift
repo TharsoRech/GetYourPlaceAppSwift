@@ -33,7 +33,6 @@ struct ResidenceListView: View {
 
     }
     
-    // MARK: - Sub-views
     
     private var residenceList: some View {
         ForEach(residences) { residence in
@@ -45,6 +44,7 @@ struct ResidenceListView: View {
                     }
                 }
         }
+        
     }
     
     private var skeletonStack: some View {
@@ -74,7 +74,7 @@ struct ResidenceListView: View {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             ResidenceListView(
                 residences: [],
-                isLoading: true,
+                isLoading: false,
                 isFetchingMore: false,
                 isScrollable: true,
                 onLoadMore: {}

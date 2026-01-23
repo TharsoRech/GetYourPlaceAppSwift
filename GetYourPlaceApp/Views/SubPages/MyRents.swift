@@ -26,25 +26,28 @@ struct MyRents: View {
                 }
                 .padding(.top,16)
                 
-                AccordionView(text: .constant("Published Properties")) {
-                    ResidenceListView(
-                        residences: viewModel.publishResidences,
-                        isLoading: viewModel.isLoading,
-                        isFetchingMore: viewModel.isFetchingMore,
-                        onLoadMore: { }
-                    )
+                ScrollView{
+                    VStack{
+                        AccordionView(text: .constant("Published Properties")) {
+                            ResidenceListView(
+                                residences: viewModel.publishResidences,
+                                isLoading: viewModel.isLoading,
+                                isFetchingMore: viewModel.isFetchingMore,
+                                onLoadMore: { }
+                            )
+                        }
+                        
+                        AccordionView(text: .constant("UnPublished Properties")) {
+                            ResidenceListView(
+                                residences: viewModel.publishResidences,
+                                isLoading: viewModel.isLoading,
+                                isFetchingMore: viewModel.isFetchingMore,
+                                onLoadMore: { }
+                            )
+                        }
+                    }
                 }
-                
-                AccordionView(text: .constant("UnPublished Properties")) {
-                    ResidenceListView(
-                        residences: viewModel.publishResidences,
-                        isLoading: viewModel.isLoading,
-                        isFetchingMore: viewModel.isFetchingMore,
-                        onLoadMore: { }
-                    )
-                }
-                
-   
+
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }

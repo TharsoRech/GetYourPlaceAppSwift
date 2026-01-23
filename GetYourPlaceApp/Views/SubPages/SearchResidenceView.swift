@@ -37,7 +37,7 @@ struct SearchResidenceView: View {
                 isLoading: viewModel.isLoading,
                 isFetchingMore: viewModel.isFetchingMore,
                 onLoadMore: { viewModel.loadNextPage() }
-            )
+            ).padding(16)
         }
         .sheet(isPresented: $viewModel.showingFilters) {
             FilterView(filter: $viewModel.currentFilter) { isApplied in

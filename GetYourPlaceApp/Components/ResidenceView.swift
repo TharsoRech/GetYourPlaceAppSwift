@@ -5,64 +5,71 @@ struct ResidenceView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading) {
-                // 1. Check for the image
+            VStack(alignment: .leading, spacing: 0) { // Set to leading for better text alignment
+                // 1. Image and Overlay using ZStack
                 if let mainImg = residence.mainImageBase64.toSwiftUIImage() {
-                    mainImg
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .clipped()
-                        .overlay(alignment: .top) {
-                            HStack {
-                                Text(residence.type)
-                                    .fontWeight(.semibold)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .foregroundColor(.black)
-                                    .font(.system(size: 18, weight: .regular, design: .default))
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 32)
-                                            .fill(Color.white.opacity(0.9)) //
-                                    )
-                                Spacer()
-                                HeartButton()
-                                    .padding(10)
-                                    .background(Circle().fill(Color.white.opacity(0.9)))
-                            }
-                            .padding()
-                        }
-                    HStack {
-                            Text(residence.name)
-                                .font(.system(size: 20, weight: .regular, design: .default))
+                    ZStack(alignment: .top) {
+                        mainImg
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 250)
+                        // This next line is critical:
+                                                .frame(minWidth: 0, maxWidth: .infinity)
+                            .clipped()
+                        
+                        // Floating Controls
+                        HStack {
+                            Text(residence.type)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .foregroundColor(.black)
+                                .font(.system(size: 18))
+                                .background(
+                                    RoundedRectangle(cornerRadius: 32)
+                                        .fill(Color.white.opacity(0.9))
+                                )
+                            
                             Spacer()
-                        Text(residence.formattedPrice)
-                            .font(.system(size: 22, weight: .regular, design: .default))
+                            
+                            HeartButton()
+                                .padding(10)
+                                .background(Circle().fill(Color.white.opacity(0.9)))
                         }
-                        .padding(.top, 8)
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
+                        .padding()
+                    }
+                }
+                
+                // 2. Info Content
+                VStack(alignment: .leading, spacing: 16) {
                     HStack {
-                        Text(residence.formattedLocation)
-                            .font(.system(size: 16, weight: .regular, design: .default))
+                        Text(residence.name)
+                            .font(.system(size: 20, weight: .regular))
                         Spacer()
-                    }.padding(.top, 0)
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
-                    HStack {
-                        ResidenceCharacteristics(text: residence.formattedNumberOfBeds, iconName: "bed.double.fill")
-                        ResidenceCharacteristics(text: residence.formattedNumberOfbaths, iconName: "bathtub.fill")
-                        ResidenceCharacteristics(text: residence.formattedNumberOfGarages, iconName: "door.garage.closed")
-                        Spacer()
-                    }.padding(.top, 0)
-                        .padding(.bottom, 16)
+                        Text(residence.formattedPrice)
+                            .font(.system(size: 22, weight: .regular))
+                    }
+                    
+                    Text(residence.formattedLocation)
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.secondary)
                     
                 }
+                .padding(16)
+                
+                HStack(spacing: 0) {
+                    ResidenceCharacteristics(text: residence.formattedNumberOfBeds, iconName: "bed.double.fill")
+                    ResidenceCharacteristics(text: residence.formattedNumberOfbaths, iconName: "bathtub.fill")
+                    ResidenceCharacteristics(text: residence.formattedNumberOfGarages, iconName: "door.garage.closed")
+                }
+                .padding(.vertical,12)
             }
             .background(Color.white)
             .cornerRadius(24)
+            .foregroundColor(.black)
+            .padding(.vertical,8)
+            .padding(.horizontal,4)
             .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-            .padding()
         }
     }
 }
