@@ -11,7 +11,7 @@ struct SearchResidenceView: View {
                     .foregroundColor(.white)
                     .font(.system(size: 22, weight: .regular, design: .default))
                 Spacer()
-                NotificationButton(count: 2)
+                NotificationButton(notifications:viewModel.newNotifications)
             }
             .padding(.horizontal, 32)
             .padding(.top, 10)

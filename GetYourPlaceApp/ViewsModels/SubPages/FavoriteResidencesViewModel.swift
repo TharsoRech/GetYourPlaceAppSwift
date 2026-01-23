@@ -21,7 +21,9 @@ class FavoriteResidencesViewModel: ObservableObject {
     func GetFavoritesResidences() {
         
         residenceRunner.runInBackground {
-            self.isLoading = true
+            await MainActor.run {
+                self.isLoading = true
+            }
             let results =  await self.residenceRepository.getFavoritesResidences()
             
             // Print the count and details of the results

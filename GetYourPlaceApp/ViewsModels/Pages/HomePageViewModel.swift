@@ -13,6 +13,7 @@ class HomePageViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isFetchingMore = false
     @Published var allResidences: [Residence] = []
+    @Published var newNotifications: [String] = []
     
     private var currentPage = 1
     private var canLoadMore = true
@@ -20,22 +21,27 @@ class HomePageViewModel: ObservableObject {
     private var citiesRunner = BackgroundTaskRunner<[String]>()
     private var defaultFilterRunner = BackgroundTaskRunner<[String]>()
     private var customFilterRunner = BackgroundTaskRunner<ResidenceFilter>()
+    private var notificationRunner = BackgroundTaskRunner<[String]>()
     
     private var cancellables = Set<AnyCancellable>()
 
     private let filteRepository: FilterRepositoryProtocol
     private let residenceRepository: ResidenceRepositoryProtocol
+    private let notificationRepository: NotificationRepositoryProtocol
         
     init(filterRepository: FilterRepositoryProtocol =  FilterRepository(),
-         residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository()){
+         residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository(),
+         notificationRepository: NotificationRepositoryProtocol = NotificationRepository()){
         self.filteRepository = filterRepository;
         self.residenceRepository = residenceRepository;
+        self.notificationRepository = notificationRepository;
         self.isFilterActive = false;
         self.currentFilter = ResidenceFilter();
         Task {
               fetchFilters()
               GetRecentResidences()
               fetchCustomFilters()
+              fetchNotifications()
         }
     }
     
@@ -195,6 +201,18 @@ class HomePageViewModel: ObservableObject {
             }
             
             return results
+        }
+    }
+    
+    func fetchNotifications() {
+        notificationRunner.runInBackground {
+            let results = await self.notificationRepository.getNotifications()
+            
+            await MainActor.run {
+                self.newNotifications = results
+            }
+            
+            return results;
         }
     }
     
