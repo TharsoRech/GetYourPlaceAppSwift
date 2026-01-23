@@ -20,6 +20,7 @@ class Residence: Identifiable {
     // Image properties
     var mainImageBase64: String
     var galleryImagesBase64: [String]
+    var favorite: Bool = false
     
     // MARK: - Formatters
     var formattedPrice: String {
@@ -37,7 +38,7 @@ class Residence: Identifiable {
     var formattedNumberOfbaths: String { "\(baths) Baths" }
     
     // MARK: - Initializer
-    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int,rating:Double,createdAt:Date, mainImageBase64: String, galleryImagesBase64: [String]) {
+    init(name: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int,rating:Double,createdAt:Date, mainImageBase64: String, galleryImagesBase64: [String], favorite:Bool) {
         self.name = name
         self.address = address
         self.location = location
@@ -53,6 +54,7 @@ class Residence: Identifiable {
         self.galleryImagesBase64 = galleryImagesBase64
         self.rating = rating
         self.createdAt = createdAt
+        self.favorite = favorite
     }
     
     // MARK: - Mock Data
@@ -72,7 +74,8 @@ class Residence: Identifiable {
             rating:5.0,
             createdAt: Date(),
             mainImageBase64: "", // Use empty string if asset helper isn't available
-            galleryImagesBase64: []
+            galleryImagesBase64: [],
+            favorite: false
         )
     }
     

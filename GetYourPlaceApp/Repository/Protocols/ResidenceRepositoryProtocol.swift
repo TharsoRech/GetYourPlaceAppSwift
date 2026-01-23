@@ -5,5 +5,7 @@ protocol ResidenceRepositoryProtocol {
     
     func filterResidences(_ residences: [Residence], with filter: ResidenceFilter) async -> [Residence]
     
-    func getPublishResidences() async -> [Residence] 
+    func getPublishResidences() async -> [Residence]
+    
+    func getFavoritesResidences() async -> [Residence]
 }

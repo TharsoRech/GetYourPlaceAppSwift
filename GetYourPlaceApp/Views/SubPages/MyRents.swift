@@ -30,7 +30,7 @@ struct MyRents: View {
                     VStack{
                         AccordionView(text: .constant("Published Properties")) {
                             ResidenceListView(
-                                residences: viewModel.publishResidences,
+                                residences: $viewModel.publishResidences,
                                 isLoading: viewModel.isLoading,
                                 isFetchingMore: viewModel.isFetchingMore,
                                 onLoadMore: { }
@@ -39,7 +39,7 @@ struct MyRents: View {
                         
                         AccordionView(text: .constant("UnPublished Properties")) {
                             ResidenceListView(
-                                residences: viewModel.publishResidences,
+                                residences: $viewModel.publishResidences,
                                 isLoading: viewModel.isLoading,
                                 isFetchingMore: viewModel.isFetchingMore,
                                 onLoadMore: { }

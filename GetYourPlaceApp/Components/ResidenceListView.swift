@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ResidenceListView: View {
-    let residences: [Residence]
+    @Binding var residences: [Residence]
     let isLoading: Bool
     let isFetchingMore: Bool
     var isScrollable: Bool = true // Add this flag
@@ -35,16 +35,14 @@ struct ResidenceListView: View {
     
     
     private var residenceList: some View {
-        ForEach(residences) { residence in
-            ResidenceView(residence: residence)
+        ForEach($residences) { $residence in
+            ResidenceView(residence: $residence)
                 .onAppear {
-                    // Check if this is the last item to trigger pagination
                     if residence.id == residences.last?.id {
                         onLoadMore()
                     }
                 }
         }
-        
     }
     
     private var skeletonStack: some View {
@@ -69,12 +67,12 @@ struct ResidenceListView: View {
 
 #Preview("Residence List States") {
     TabView {
-        // Tab 1: Testing the Skeleton (Loading State)
+        // Tab 1: Loading State
         ZStack {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             ResidenceListView(
-                residences: [],
-                isLoading: false,
+                residences: .constant([]), // Fixed with .constant
+                isLoading: true,           // Set to true to actually see skeletons
                 isFetchingMore: false,
                 isScrollable: true,
                 onLoadMore: {}
@@ -82,11 +80,11 @@ struct ResidenceListView: View {
         }
         .tabItem { Label("Loading", systemImage: "hourglass") }
         
-        // Tab 2: Testing the actual List (Data State)
+        // Tab 2: Data State
         ZStack {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             ResidenceListView(
-                residences: [Residence.mock, Residence.mock, Residence.mock],
+                residences: .constant([.mock, .mock, .mock]), // Fixed with .constant
                 isLoading: false,
                 isFetchingMore: false,
                 isScrollable: true,
@@ -95,15 +93,15 @@ struct ResidenceListView: View {
         }
         .tabItem { Label("Data", systemImage: "list.bullet") }
         
-        // Tab 3: Testing inside an Accordion (Width/Scroll Check)
+        // Tab 3: Accordion Check
         ZStack {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             AccordionView(text: .constant("Test Accordion")) {
                 ResidenceListView(
-                    residences: [Residence.mock],
+                    residences: .constant([.mock]), // Fixed with .constant
                     isLoading: false,
                     isFetchingMore: false,
-                    isScrollable: false, // Important for nested views
+                    isScrollable: false,
                     onLoadMore: {}
                 )
             }

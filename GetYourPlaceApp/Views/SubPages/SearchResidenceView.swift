@@ -33,7 +33,7 @@ struct SearchResidenceView: View {
 
             // 4. Residence List with Skeleton Logic
             ResidenceListView(
-                residences: viewModel.residences,
+                residences: $viewModel.residences,
                 isLoading: viewModel.isLoading,
                 isFetchingMore: viewModel.isFetchingMore,
                 onLoadMore: { viewModel.loadNextPage() }

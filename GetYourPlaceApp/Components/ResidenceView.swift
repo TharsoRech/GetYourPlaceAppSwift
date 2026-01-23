@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ResidenceView: View {
-    var residence: Residence
+    @Binding var residence: Residence
     
     var body: some View {
         ScrollView {
@@ -32,9 +32,7 @@ struct ResidenceView: View {
                             
                             Spacer()
                             
-                            HeartButton()
-                                .padding(10)
-                                .background(Circle().fill(Color.white.opacity(0.9)))
+                            HeartButton(isLiked: $residence.favorite, likedColor: .red)
                         }
                         .padding()
                     }
@@ -75,24 +73,23 @@ struct ResidenceView: View {
 }
 
 #Preview {
-        let mockResidence = Residence(
-            name: "Modern Villa",
-            address: "123 luxury Way",
-            location: "Los Angeles, CA",
-            type: "House",
-            price: 2500000.0,
-            numberOfRooms: 8,
-            numberOfBeds: 4,
-            baths: 3,
-            squareFootage: 3500.0,
-            hasGarage: true,
-            numberOfGarages: 1,
-            rating:5.0,
-            createdAt: Date(),
-            mainImageBase64: "house1".asAssetBase64,
-            galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64]
-        )
-        
-        // Pass the mock data into your SwiftUI View
-        ResidenceView(residence: mockResidence)
+    // Note: We use a State variable or .constant here
+    ResidenceView(residence: .constant(Residence(
+        name: "Modern Villa",
+        address: "123 luxury Way",
+        location: "Los Angeles, CA",
+        type: "House",
+        price: 2500000.0,
+        numberOfRooms: 8,
+        numberOfBeds: 4,
+        baths: 3,
+        squareFootage: 3500.0,
+        hasGarage: true,
+        numberOfGarages: 1,
+        rating: 5.0,
+        createdAt: Date(),
+        mainImageBase64: "house1".asAssetBase64,
+        galleryImagesBase64: ["house1".asAssetBase64],
+        favorite: false
+    )))
 }

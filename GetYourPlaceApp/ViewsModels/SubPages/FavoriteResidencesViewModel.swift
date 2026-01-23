@@ -2,8 +2,8 @@ import Foundation
 import SwiftUI
 import Combine
 
-class MyRentsViewModel: ObservableObject {
-    @Published var publishResidences: [Residence] = []
+class FavoriteResidencesViewModel: ObservableObject {
+    @Published var favoritesResidences: [Residence] = []
     @Published var isLoading = false
     @Published var isFetchingMore = false
     
@@ -13,27 +13,25 @@ class MyRentsViewModel: ObservableObject {
     init(residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository()){
         self.residenceRepository = residenceRepository;
         Task {
-            GetPublishResidences()
+            GetFavoritesResidences()
         }
     }
     
   
-    func GetPublishResidences() {
+    func GetFavoritesResidences() {
         
         residenceRunner.runInBackground {
-            await MainActor.run {
-                self.isLoading = true
-            }
-            let results =  await self.residenceRepository.getPublishResidences()
+            self.isLoading = true
+            let results =  await self.residenceRepository.getFavoritesResidences()
             
             // Print the count and details of the results
-            print("✅ Successfully fetched \(results.count) published residences")
+            print("✅ Successfully fetched \(results.count) favorites residences")
             for residence in results {
-                print("🏠 Found Published Residence: \(residence.name) at \(residence.location)")
+                print("🏠 Found favorites Residence: \(residence.name) at \(residence.location)")
             }
             
             await MainActor.run {
-                self.publishResidences = results;
+                self.favoritesResidences = results;
                 self.isLoading = false
             }
 
@@ -44,5 +42,5 @@ class MyRentsViewModel: ObservableObject {
 }
 
 #Preview {
-    MyRents()
+    FavoriteResidences()
 }

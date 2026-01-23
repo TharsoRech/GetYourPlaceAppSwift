@@ -20,6 +20,9 @@ struct HomePage: View {
             else if(selectedTab == "rents"){
                 MyRents()
             }
+            else if(selectedTab == "heart"){
+                FavoriteResidences()
+            }
 
             // 5. CUSTOM FLOATING BOTTOM BAR
             VStack {

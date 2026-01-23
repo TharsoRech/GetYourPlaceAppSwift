@@ -34,7 +34,8 @@ struct AccordionView<Content: View>: View {
 #Preview {
     AccordionView(text: .constant("Published Properties")) {
         ResidenceListView(
-            residences:  [
+            // Wrap the entire array in .constant()
+            residences: .constant([
                 Residence(
                     name: "Modern Villa",
                     address: "123 luxury Way",
@@ -49,8 +50,9 @@ struct AccordionView<Content: View>: View {
                     numberOfGarages: 1,
                     rating: 4.0,
                     createdAt: Date().addingTimeInterval(-10000),
-                    mainImageBase64: "house1".asAssetBase64, // Nome do Asset
-                    galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64]
+                    mainImageBase64: "house1".asAssetBase64,
+                    galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64],
+                    favorite: false
                 ),
                 Residence(
                     name: "Skyline Apartment",
@@ -67,7 +69,8 @@ struct AccordionView<Content: View>: View {
                     rating: 4.0,
                     createdAt: Date().addingTimeInterval(-20000),
                     mainImageBase64: "house2".asAssetBase64,
-                    galleryImagesBase64: ["house2".asAssetBase64]
+                    galleryImagesBase64: ["house2".asAssetBase64],
+                    favorite: false
                 ),
                 Residence(
                     name: "Cozy Cottage",
@@ -84,11 +87,14 @@ struct AccordionView<Content: View>: View {
                     rating: 4.0,
                     createdAt: Date(),
                     mainImageBase64: "house3".asAssetBase64,
-                    galleryImagesBase64: []
+                    galleryImagesBase64: [],
+                    favorite: false
                 )
-            ],
+            ]),
             isLoading: false,
             isFetchingMore: false,
+            // You can also pass the scrollable flag if needed
+            isScrollable: false,
             onLoadMore: { }
         )
     }

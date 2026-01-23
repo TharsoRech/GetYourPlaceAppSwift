@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct HeartButton: View {
-    @State private var isLiked: Bool = false
+    @Binding var isLiked: Bool
+    // Parameter for the "liked" color
+    var likedColor: Color
     
     var body: some View {
         Button(action: {
@@ -13,8 +15,9 @@ struct HeartButton: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
-                .foregroundColor(isLiked ? .red : .gray)
-                .scaleEffect(isLiked ? 1.2 : 1.0)
+                // Use the parameter here
+                .foregroundColor(isLiked ? likedColor : .gray)
+                .padding(10)
         }
     }
 }
@@ -22,6 +25,17 @@ struct HeartButton: View {
 // Preview
 struct HeartButton_Previews: PreviewProvider {
     static var previews: some View {
-        HeartButton()
+        // We use a wrapper view so the @State can actually change
+        PreviewWrapper()
+    }
+    
+    struct PreviewWrapper: View {
+        @State private var isLiked = false
+        
+        var body: some View {
+            // Now passing both the binding and the color parameter
+            HeartButton(isLiked: $isLiked, likedColor: .pink)
+        }
     }
 }
+
