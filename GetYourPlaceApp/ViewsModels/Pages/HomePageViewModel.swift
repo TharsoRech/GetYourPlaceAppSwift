@@ -14,6 +14,7 @@ class HomePageViewModel: ObservableObject {
     @Published var isFetchingMore = false
     @Published var allResidences: [Residence] = []
     @Published var newNotifications: [String] = []
+    @Published var conversations: [Conversation] = []
     
     private var currentPage = 1
     private var canLoadMore = true
@@ -22,19 +23,23 @@ class HomePageViewModel: ObservableObject {
     private var defaultFilterRunner = BackgroundTaskRunner<[String]>()
     private var customFilterRunner = BackgroundTaskRunner<ResidenceFilter>()
     private var notificationRunner = BackgroundTaskRunner<[String]>()
+    private var conversationRunner = BackgroundTaskRunner<[Conversation]>()
     
     private var cancellables = Set<AnyCancellable>()
 
     private let filteRepository: FilterRepositoryProtocol
     private let residenceRepository: ResidenceRepositoryProtocol
     private let notificationRepository: NotificationRepositoryProtocol
+    private let chatRepository: ChatRepositoryProtocol
         
     init(filterRepository: FilterRepositoryProtocol =  FilterRepository(),
          residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository(),
-         notificationRepository: NotificationRepositoryProtocol = NotificationRepository()){
+         notificationRepository: NotificationRepositoryProtocol = NotificationRepository()
+         ,ChatRepositoryRepository: ChatRepositoryProtocol = ChatRepository(),){
         self.filteRepository = filterRepository;
         self.residenceRepository = residenceRepository;
         self.notificationRepository = notificationRepository;
+        self.chatRepository = ChatRepositoryRepository;
         self.isFilterActive = false;
         self.currentFilter = ResidenceFilter();
         Task {
@@ -42,6 +47,7 @@ class HomePageViewModel: ObservableObject {
               GetRecentResidences()
               fetchCustomFilters()
               fetchNotifications()
+              fetchConversations()
         }
     }
     
@@ -213,6 +219,18 @@ class HomePageViewModel: ObservableObject {
             }
             
             return results;
+        }
+    }
+    
+    func fetchConversations() {
+        conversationRunner.runInBackground {
+            let results = await self.chatRepository.getConversations()
+            
+            await MainActor.run {
+                self.conversations = results
+            }
+            
+            return results
         }
     }
     

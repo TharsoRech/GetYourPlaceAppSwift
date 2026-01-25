@@ -26,7 +26,6 @@ struct NotificationDropdown: View {
                         .padding()
                 } else {
                     ForEach(notifications, id: \.self) { note in
-                        // Using a Button ensures the "Hover" and "Pressed" states are handled by the OS
                         Button(action: { print("Tapped \(note)") }) {
                             HStack(alignment: .top, spacing: 12) {
                                 Circle()
@@ -44,7 +43,7 @@ struct NotificationDropdown: View {
                             .padding(.horizontal)
                             .contentShape(Rectangle())
                         }
-                        .buttonStyle(NotificationButtonStyle()) // Custom style for hover/press
+                        .buttonStyle(NotificationButtonStyle())
                         
                         if note != notifications.last {
                             Divider().padding(.horizontal)
@@ -60,14 +59,10 @@ struct NotificationDropdown: View {
     }
 }
 
-// THIS IS THE KEY: A custom style that handles the background color change
 struct NotificationButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            // configuration.isPressed handles clicks
-            // On macOS, Button automatically handles hover highlight if using this style
             .background(configuration.isPressed ? Color.black.opacity(0.1) : Color.clear)
-            // Add this specifically for macOS hover support
             .onHover { isHovering in
                 // This is a backup for macOS environments
             }

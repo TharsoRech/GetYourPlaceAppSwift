@@ -23,6 +23,9 @@ struct HomePage: View {
             else if(selectedTab == "heart"){
                 FavoriteResidences()
             }
+            else if(selectedTab == "chat"){
+                ConversationsListView(chatList: $viewModel.conversations)
+            }
 
             // 5. CUSTOM FLOATING BOTTOM BAR
             VStack {
