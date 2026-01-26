@@ -26,6 +26,9 @@ struct HomePage: View {
             else if(selectedTab == "chat"){
                 ConversationsListView(chatList: $viewModel.conversations)
             }
+            else if(selectedTab == "profile"){
+                EditProfileView(profile: viewModel.profile)
+            }
 
             // 5. CUSTOM FLOATING BOTTOM BAR
             VStack {

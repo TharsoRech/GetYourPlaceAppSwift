@@ -15,6 +15,7 @@ class HomePageViewModel: ObservableObject {
     @Published var allResidences: [Residence] = []
     @Published var newNotifications: [String] = []
     @Published var conversations: [Conversation] = []
+    @Published var profile: UserProfile
     
     private var currentPage = 1
     private var canLoadMore = true
@@ -26,28 +27,34 @@ class HomePageViewModel: ObservableObject {
     private var conversationRunner = BackgroundTaskRunner<[Conversation]>()
     
     private var cancellables = Set<AnyCancellable>()
+    private var profileRunner = BackgroundTaskRunner<UserProfile>()
 
     private let filteRepository: FilterRepositoryProtocol
     private let residenceRepository: ResidenceRepositoryProtocol
     private let notificationRepository: NotificationRepositoryProtocol
     private let chatRepository: ChatRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol
         
     init(filterRepository: FilterRepositoryProtocol =  FilterRepository(),
          residenceRepository: ResidenceRepositoryProtocol = ResidenceRepository(),
          notificationRepository: NotificationRepositoryProtocol = NotificationRepository()
-         ,ChatRepositoryRepository: ChatRepositoryProtocol = ChatRepository(),){
+         ,chatRepository: ChatRepositoryProtocol = ChatRepository()
+        ,userRepository: UserRepositoryProtocol = UserRepository()){
         self.filteRepository = filterRepository;
         self.residenceRepository = residenceRepository;
         self.notificationRepository = notificationRepository;
-        self.chatRepository = ChatRepositoryRepository;
+        self.userRepository = userRepository;
+        self.chatRepository = chatRepository;
         self.isFilterActive = false;
         self.currentFilter = ResidenceFilter();
+        self.profile = UserProfile()
         Task {
               fetchFilters()
               GetRecentResidences()
               fetchCustomFilters()
               fetchNotifications()
               fetchConversations()
+              fetchUserProfile()
         }
     }
     
@@ -212,9 +219,13 @@ class HomePageViewModel: ObservableObject {
     
     func fetchNotifications() {
         notificationRunner.runInBackground {
+            await MainActor.run {
+                self.isLoading = true
+            }
             let results = await self.notificationRepository.getNotifications()
             
             await MainActor.run {
+                self.isLoading = false
                 self.newNotifications = results
             }
             
@@ -228,6 +239,18 @@ class HomePageViewModel: ObservableObject {
             
             await MainActor.run {
                 self.conversations = results
+            }
+            
+            return results
+        }
+    }
+    
+    func fetchUserProfile() {
+        profileRunner.runInBackground {
+            let results = await self.userRepository.getUserConfiguration()
+            
+            await MainActor.run {
+                self.profile = results
             }
             
             return results

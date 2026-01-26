@@ -11,3 +11,12 @@ extension Binding where Value == [String: String] {
         )
     }
 }
+
+extension Binding where Value == String? {
+    var toUnwrapped: Binding<String> {
+        Binding<String>(
+            get: { self.wrappedValue ?? "" },
+            set: { self.wrappedValue = $0 }
+        )
+    }
+}
