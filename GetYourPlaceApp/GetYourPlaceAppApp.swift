@@ -1,20 +1,25 @@
-//
-//  GetYourPlaceAppApp.swift
-//  GetYourPlaceApp
-//
-//  Created by Tharso francisco Rech curia on 01/01/26.
-//
-
 import SwiftUI
 
 @main
 struct GetYourPlaceAppApp: App {
     let persistenceController = PersistenceController.shared
+    @State private var isActive = false
 
     var body: some Scene {
         WindowGroup {
-            HomeScreen()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-        }
+                    if isActive {
+                        HomeScreen()
+                            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                    } else {
+                        SplashScreenView()
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                                    withAnimation {
+                                        self.isActive = true
+                                    }
+                                }
+                            }
+                    }
+                }
     }
 }
