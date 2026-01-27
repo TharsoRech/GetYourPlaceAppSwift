@@ -1,23 +1,29 @@
 import SwiftUI
 
+import SwiftUI
+
 struct HeartButton: View {
     @Binding var isLiked: Bool
-    // Parameter for the "liked" color
+    @Environment(AuthManager.self) private var auth
     var likedColor: Color
     
     var body: some View {
-        Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                isLiked.toggle()
+        // Only show the button if authenticated
+        if auth.isAuthenticated {
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isLiked.toggle()
+                }
+            }) {
+                Image(systemName: isLiked ? "heart.fill" : "heart")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(isLiked ? likedColor : .gray)
+                    // Added a little extra punch to the animation
+                    .scaleEffect(isLiked ? 1.2 : 1.0)
+                    .padding(10)
             }
-        }) {
-            Image(systemName: isLiked ? "heart.fill" : "heart")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 30, height: 30)
-                // Use the parameter here
-                .foregroundColor(isLiked ? likedColor : .gray)
-                .padding(10)
         }
     }
 }
@@ -26,7 +32,7 @@ struct HeartButton: View {
 struct HeartButton_Previews: PreviewProvider {
     static var previews: some View {
         // We use a wrapper view so the @State can actually change
-        PreviewWrapper()
+        PreviewWrapper().environment(AuthManager())
     }
     
     struct PreviewWrapper: View {
@@ -34,7 +40,7 @@ struct HeartButton_Previews: PreviewProvider {
         
         var body: some View {
             // Now passing both the binding and the color parameter
-            HeartButton(isLiked: $isLiked, likedColor: .pink)
+            HeartButton(isLiked: $isLiked, likedColor: .pink).environment(AuthManager())
         }
     }
 }

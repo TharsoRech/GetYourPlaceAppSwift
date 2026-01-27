@@ -2,22 +2,17 @@ import SwiftUI
 
 struct SearchResidenceView: View {
     @StateObject var viewModel: HomePageViewModel
+    @Environment(AuthManager.self) private var auth
     
     var body: some View {
-        // Use ZStack so we can layer the dropdown OVER the content
         ZStack(alignment: .topTrailing) {
-            
-            // LAYER 1: Your existing UI
             VStack (spacing: 16) {
-                // 1. Header (NotificationButton is NOT here anymore)
                 HStack {
                     Text("Explore")
                         .foregroundColor(.white)
                         .font(.system(size: 22, weight: .regular))
                     Spacer()
                     
-                    // Place an invisible placeholder or just Spacer
-                    // to keep the "Explore" text on the left
                     Color.clear.frame(width: 45, height: 45)
                 }
                 .padding(.horizontal, 32)
@@ -47,12 +42,14 @@ struct SearchResidenceView: View {
                 ).padding(16)
             }
             
-            // LAYER 2: The Notification Button + Dropdown
-            // Because this is the LAST item in the ZStack, it is ON TOP of everything.
-            NotificationButton(notifications: $viewModel.newNotifications)
-                .padding(.trailing, 32)
-                .padding(.top, 10)
-                .zIndex(1) // Extra insurance
+            if auth.isAuthenticated {
+                NotificationButton(notifications: $viewModel.newNotifications)
+                    .padding(.trailing, 32)
+                    .padding(.top, 10)
+                    .zIndex(1)
+                    .transition(.scale.combined(with: .opacity)) // Nice pop-in effect
+            }
+      
         }
         .sheet(isPresented: $viewModel.showingFilters) {
             FilterView(filter: $viewModel.currentFilter) { isApplied in
@@ -65,5 +62,6 @@ struct SearchResidenceView: View {
 }
 
 #Preview {
-    SearchResidenceView(viewModel:HomePageViewModel())
+    SearchResidenceView(viewModel:HomePageViewModel()).environment(AuthManager())
 }
+

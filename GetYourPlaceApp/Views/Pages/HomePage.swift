@@ -3,6 +3,7 @@ import SwiftUI
 struct HomePage: View {
     @StateObject var viewModel: HomePageViewModel
     @State var selectedTab: String
+    @Environment(AuthManager.self) private var auth
 
     init(viewModel: HomePageViewModel = HomePageViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -18,16 +19,24 @@ struct HomePage: View {
                 SearchResidenceView(viewModel:viewModel);
             }
             else if(selectedTab == "rents"){
-                MyRents()
+                AuthGate {
+                    MyRents()
+                }
             }
             else if(selectedTab == "heart"){
-                FavoriteResidences()
+                AuthGate {
+                    FavoriteResidences()
+                }
             }
             else if(selectedTab == "chat"){
-                ConversationsListView(chatList: $viewModel.conversations)
+                AuthGate {
+                    ConversationsListView(chatList: $viewModel.conversations)
+                }
             }
             else if(selectedTab == "profile"){
-                EditProfileView(profile: viewModel.profile)
+                AuthGate {
+                    EditProfileView(profile: viewModel.profile)
+                }
             }
 
             // 5. CUSTOM FLOATING BOTTOM BAR
@@ -51,5 +60,5 @@ struct HomePage: View {
 }
 
 #Preview {
-    HomePage()
+    HomePage().environment(AuthManager())
 }

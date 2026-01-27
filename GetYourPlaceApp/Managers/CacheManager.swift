@@ -4,12 +4,10 @@ class CacheManager {
     static let shared = CacheManager()
     private let fileManager = FileManager.default
     
-    // Directory where cache files will live
     private var cacheDirectory: URL {
         fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
     }
 
-    /// Save any Codable object to disk
     func save<T: Codable>(_ object: T, forKey key: String) {
         let url = cacheDirectory.appendingPathComponent(key + ".json")
         do {
@@ -21,7 +19,6 @@ class CacheManager {
         }
     }
 
-    /// Retrieve any Codable object from disk
     func load<T: Codable>(forKey key: String, as type: T.Type) -> T? {
         let url = cacheDirectory.appendingPathComponent(key + ".json")
         
@@ -37,7 +34,6 @@ class CacheManager {
         }
     }
 
-    /// Remove a specific item
     func remove(forKey key: String) {
         let url = cacheDirectory.appendingPathComponent(key + ".json")
         try? fileManager.removeItem(at: url)

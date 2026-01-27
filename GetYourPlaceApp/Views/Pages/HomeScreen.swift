@@ -1,21 +1,14 @@
-//
-//  ContentView.swift
-//  GetYourPlaceApp
-//
-//  Created by Tharso francisco Rech curia on 01/01/26.
-//
-
 import SwiftUI
 import CoreData
 
 struct HomeScreen: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.managedObjectContext,) private var viewContext
     @State private var navigateToHome = false
+    @State private var authManager = AuthManager()
     
     var body: some View {
-        NavigationStack { // Start Stack
+        NavigationStack {
             ZStack {
-                // Background Image
                 Image("dream_home")
                     .resizable()
                     .scaledToFill()
@@ -56,7 +49,7 @@ struct HomeScreen: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToHome) {
-                HomePage()
+                HomePage().environment(authManager)
             }
         }
     }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EditProfileView: View {
     @Bindable var profile: UserProfile
+    @Environment(AuthManager.self) private var authManager
     
     var body: some View {
         ZStack {
@@ -19,6 +20,8 @@ struct EditProfileView: View {
                         CustomInputField(label: "Password", text: $profile.password.toUnwrapped, isSecure: true)
                         CustomDropdownField(label: "Date of Birth", value: $profile.dob.toUnwrapped)
                         CustomDropdownField(label: "Country/Region", value: $profile.country.toUnwrapped)
+                        
+                        logoutButton
                     }
                     .padding(.horizontal, 24)
                 }
@@ -33,9 +36,25 @@ struct EditProfileView: View {
             }
         }
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .padding(.bottom,84)
+        .padding(.bottom, 84)
     }
     
+    // ... (profileImageHeader and saveButton same as your code)
+    
+    private var logoutButton: some View {
+        Button(action: {
+                    authManager.logout() // Call the logout function
+                }) {
+                    Text("Log Out")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 55)
+                        .background(Color.black)
+                        .cornerRadius(12)
+                }
+    }
+
     private var profileImageHeader: some View {
         ZStack(alignment: .bottomTrailing) {
             Circle()
@@ -86,6 +105,6 @@ struct EditProfileView: View {
     
     return NavigationStack {
         EditProfileView(profile: user)
-            .tint(.white)
+            .tint(.white).environment(AuthManager())
     }
 }
