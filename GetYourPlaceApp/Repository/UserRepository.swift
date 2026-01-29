@@ -10,7 +10,8 @@ class UserRepository: UserRepositoryProtocol {
                     password: "securedPassword123",
                     dob: "23/05/1995",
                     country: "Nigeria",
-                    bio: "UI/UX Designer and mobile developer. Passionate about clean code and dark mode interfaces."
+                    bio: "UI/UX Designer and mobile developer. Passionate about clean code and dark mode interfaces.",
+                    role: .owner
                 )
     }
 }

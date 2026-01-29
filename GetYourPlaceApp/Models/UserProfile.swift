@@ -9,14 +9,17 @@ class UserProfile: Codable {
     var dob: String?
     var country: String?
     var bio: String?
+    var role:UserRole?
 
-    init(name: String? = nil, email: String? = nil, password: String? = nil, dob: String? = nil, country: String? = nil, bio: String? = nil) {
+    init(name: String? = nil, email: String? = nil, password: String? = nil, dob: String? = nil, country: String? = nil, bio: String? = nil,
+         role:UserRole? = nil) {
         self.name = name
         self.email = email
         self.password = password
         self.dob = dob
         self.country = country
         self.bio = bio
+        self.role = role
     }
 
     // CodingKeys are required for @Observable classes to tell Swift which properties to encode

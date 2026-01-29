@@ -3,6 +3,7 @@ import SwiftUI
 struct MyRents: View {
     @StateObject var viewModel: MyRentsViewModel
     @State private var selectedResidence: Residence? = nil
+    @Environment(AuthManager.self) var authManager
     
     init(viewModel: MyRentsViewModel = MyRentsViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -25,57 +26,84 @@ struct MyRents: View {
                                 insertion: .opacity.combined(with: .scale(scale: 0.9)),
                                 removal: .opacity.combined(with: .scale(scale: 1.1))
                             ))
-                            .zIndex(100) // Ensure it's above everything else
+                            .zIndex(100) 
                         }
             
-            VStack(spacing: 0) {
-                Button(action: {
-                    print("Plus button tapped")
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 60, height: 60)
-                        .background(Color.black)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
-                }
-                .padding(.top,16)
-                
-                ScrollView{
-                    VStack{
-                        AccordionView(text: .constant("Published Properties")) {
-                            ResidenceListView(
-                                residences: $viewModel.publishResidences,
-                                isLoading: viewModel.isLoading,
-                                isFetchingMore: viewModel.isFetchingMore,
-                                onLoadMore: { },
-                                onSelect: { residence in
-                                                        selectedResidence = residence
-                                                    }
-                            )
-                        }
-                        
-                        AccordionView(text: .constant("UnPublished Properties")) {
-                            ResidenceListView(
-                                residences: $viewModel.publishResidences,
-                                isLoading: viewModel.isLoading,
-                                isFetchingMore: viewModel.isFetchingMore,
-                                onLoadMore: { },
-                                onSelect: { residence in
-                                                        selectedResidence = residence
-                                                    }
-                            )
+            if authManager.currentUser?.role == .owner {
+                VStack(spacing: 0) {
+                    Button(action: {
+                        print("Plus button tapped")
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(Color.black)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                    .padding(.top,16)
+                    
+                    ScrollView{
+                        VStack{
+                            AccordionView(text: .constant("Published Properties")) {
+                                ResidenceListView(
+                                    residences: $viewModel.publishResidences,
+                                    isLoading: viewModel.isLoading,
+                                    isFetchingMore: viewModel.isFetchingMore,
+                                    onLoadMore: { },
+                                    onSelect: { residence in
+                                                            selectedResidence = residence
+                                                        }
+                                )
+                            }
+                            
+                            AccordionView(text: .constant("UnPublished Properties")) {
+                                ResidenceListView(
+                                    residences: $viewModel.publishResidences,
+                                    isLoading: viewModel.isLoading,
+                                    isFetchingMore: viewModel.isFetchingMore,
+                                    onLoadMore: { },
+                                    onSelect: { residence in
+                                                            selectedResidence = residence
+                                                        }
+                                )
+                            }
                         }
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
+            else{
+                ScrollView{
+                    VStack{
+                        Text("My Rents")
+                            .foregroundColor(.white)
+                            .font(.system(size: 22, weight: .regular, design: .default))
+                        Spacer()
+                        ResidenceListView(
+                            residences: $viewModel.publishResidences,
+                            isLoading: viewModel.isLoading,
+                            isFetchingMore: viewModel.isFetchingMore,
+                            onLoadMore: { },
+                            onSelect: { residence in
+                                                    selectedResidence = residence
+                                                }
+                        )
+                    }
+                }
+            }
+        
         }
     }
 }
 
-// Ensure you have a mock for the preview to work
-#Preview {
-    MyRents().environment(AuthManager())
+#Preview("Owner View") {
+    MyRents()
+        .environment(AuthManager.mock(role: .owner))
+}
+
+#Preview("Renter View") {
+    MyRents()
+        .environment(AuthManager.mock(role: .renter))
 }

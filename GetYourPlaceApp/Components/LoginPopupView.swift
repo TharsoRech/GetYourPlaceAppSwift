@@ -104,7 +104,7 @@ struct LoginPopupView: View {
             } else {
                 // 1. Create the profile from the state variables
                 let profile = UserProfile(email: email, password: password)
-                
+                profile.role = .owner
                 // 2. Pass it to the login function
                 auth.login(userProfile: profile)
                 

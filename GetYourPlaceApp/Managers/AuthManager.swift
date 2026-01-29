@@ -32,3 +32,11 @@ class AuthManager {
         }
     }
 }
+
+extension AuthManager {
+    static func mock(role: UserRole) -> AuthManager {
+        let auth = AuthManager()
+        auth.currentUser = UserProfile(role: role)
+        return auth
+    }
+}
