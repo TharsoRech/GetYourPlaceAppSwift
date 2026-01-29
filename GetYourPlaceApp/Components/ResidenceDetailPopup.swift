@@ -3,10 +3,10 @@ import SwiftUI
 struct ResidenceDetailPopup: View {
     let residence: Residence
     @Binding var isPresented: Bool
+    @State private var allImages: [UIImage] = []
     
     // Performance Optimization States
     @State private var isLoading = true
-    @State private var allImages: [String] = []
     
     var body: some View {
         GeometryReader { geometry in
@@ -150,16 +150,25 @@ struct ResidenceDetailPopup: View {
     }
 
     private func loadDataSequentially() {
+        // Capture residence to avoid threading issues
+        let residenceData = residence
+        
         DispatchQueue.global(qos: .userInitiated).async {
-            var images = [residence.mainImageBase64]
-            images.append(contentsOf: residence.galleryImagesBase64)
-            let filtered = images.filter { !$0.isEmpty }
+            var base64Strings = [residenceData.mainImageBase64]
+            base64Strings.append(contentsOf: residenceData.galleryImagesBase64)
             
-            // Artificial delay to ensure the popup animation finishes first
-            usleep(300_000)
+            // Convert strings to UIImages HERE on the background thread
+            let decodedImages = base64Strings.compactMap { base64String -> UIImage? in
+                guard let data = Data(base64Encoded: base64String) else { return nil }
+                return UIImage(data: data)
+            }
+            
+            // Brief sleep to let the UI animation breathe
+            usleep(200_000)
             
             DispatchQueue.main.async {
-                self.allImages = filtered
+                // Now the Main Thread just receives finished objects
+                self.allImages = decodedImages
                 withAnimation(.easeOut(duration: 0.5)) {
                     self.isLoading = false
                 }

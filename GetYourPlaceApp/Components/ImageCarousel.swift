@@ -1,18 +1,19 @@
 import SwiftUI
 
 struct ImageCarousel: View {
-    let images: [String]
+    let images: [UIImage]
     
     var body: some View {
         TabView {
-            ForEach(images, id: \.self) { base64 in
-                if let uiImage = decodeBase64(base64) {
-                    Image(uiImage: uiImage)
+            if images.isEmpty {
+                placeholderView
+            } else {
+                ForEach(0..<images.count, id: \.self) { index in
+                    Image(uiImage: images[index])
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(maxWidth: .infinity)
-                } else {
-                    placeholderView
+                        .clipped() // Ensures image doesn't bleed out of bounds
                 }
             }
         }
@@ -28,23 +29,25 @@ struct ImageCarousel: View {
                     .font(.largeTitle)
             )
     }
-    
-    private func decodeBase64(_ string: String) -> UIImage? {
-        guard let data = Data(base64Encoded: string) else { return nil }
-        return UIImage(data: data)
-    }
 }
 
 #Preview("Image Carousel") {
-    // Creating dummy Base64 strings for testing swiping
     let redPixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     let bluePixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60eOFQAAAABJRU5ErkJggg=="
     let greenPixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg=="
     
-    ZStack {
+    let mockStrings = [redPixel, bluePixel, greenPixel]
+    
+    // Explicitly declaring [UIImage] solves the inference error
+    let mockImages: [UIImage] = mockStrings.compactMap { str in
+        guard let data = Data(base64Encoded: str) else { return nil }
+        return UIImage(data: data)
+    }
+    
+    return ZStack {
         Color.black.ignoresSafeArea()
         
-        ImageCarousel(images: [redPixel, bluePixel, greenPixel])
+        ImageCarousel(images: mockImages)
             .frame(height: 250)
             .cornerRadius(20)
             .padding()
