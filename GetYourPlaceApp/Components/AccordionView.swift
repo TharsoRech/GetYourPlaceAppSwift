@@ -95,7 +95,8 @@ struct AccordionView<Content: View>: View {
             isFetchingMore: false,
             // You can also pass the scrollable flag if needed
             isScrollable: false,
-            onLoadMore: { }
+            onLoadMore: { },
+            onSelect: { _ in }
         )
     }
 }

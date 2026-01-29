@@ -6,4 +6,5 @@ extension UIImage {
          // Converte para JPEG (menor tamanho) ou use .pngData() para sem perdas
          return self.jpegData(compressionQuality: compressionQuality)?.base64EncodedString()
      }
+
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct SearchResidenceView: View {
     @StateObject var viewModel: HomePageViewModel
     @Environment(AuthManager.self) private var auth
+    @State private var selectedResidence: Residence? = nil
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -38,7 +39,10 @@ struct SearchResidenceView: View {
                     residences: $viewModel.residences,
                     isLoading: viewModel.isLoading,
                     isFetchingMore: viewModel.isFetchingMore,
-                    onLoadMore: { viewModel.loadNextPage() }
+                    onLoadMore: { viewModel.loadNextPage() },
+                    onSelect: { residence in
+                                            selectedResidence = residence
+                                        }
                 ).padding(16)
             }
             
@@ -49,6 +53,21 @@ struct SearchResidenceView: View {
                     .zIndex(1)
                     .transition(.scale.combined(with: .opacity)) // Nice pop-in effect
             }
+            
+            if let residence = selectedResidence {
+                            ResidenceDetailPopup(
+                                residence: residence,
+                                isPresented: Binding(
+                                    get: { selectedResidence != nil },
+                                    set: { if !$0 { selectedResidence = nil } }
+                                )
+                            )
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.9)),
+                                removal: .opacity.combined(with: .scale(scale: 1.1))
+                            ))
+                            .zIndex(100)
+                        }
       
         }
         .sheet(isPresented: $viewModel.showingFilters) {

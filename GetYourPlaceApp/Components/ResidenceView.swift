@@ -2,78 +2,96 @@ import SwiftUI
 
 struct ResidenceView: View {
     @Binding var residence: Residence
+    @State private var showingDetail = false
+    
+    var onTap: () -> Void
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) { // Set to leading for better text alignment
-                // 1. Image and Overlay using ZStack
-                if let mainImg = residence.mainImageBase64.toSwiftUIImage() {
-                    ZStack(alignment: .top) {
-                        mainImg
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 250)
-                        // This next line is critical:
-                                                .frame(minWidth: 0, maxWidth: .infinity)
-                            .clipped()
-                        
-                        // Floating Controls
-                        HStack {
-                            Text(residence.type)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .foregroundColor(.black)
-                                .font(.system(size: 18))
-                                .background(
-                                    RoundedRectangle(cornerRadius: 32)
-                                        .fill(Color.white.opacity(0.9))
-                                )
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let mainImg = residence.mainImageBase64.toSwiftUIImage() {
+                        ZStack(alignment: .top) {
+                            mainImg
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 250)
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .clipped()
+                            
+                            HStack {
+                                Text(residence.type)
+                                    .fontWeight(.semibold)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .foregroundColor(.black)
+                                    .font(.system(size: 16))
+                                    .background(Capsule().fill(Color.white.opacity(0.9)))
+                                
+                                Spacer()
+                                
+                                HeartButton(isLiked: $residence.favorite, likedColor: .red)
+                            }
+                            .padding()
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(alignment: .firstTextBaseline) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(residence.name)
+                                    .font(.system(size: 22, weight: .bold))
+                                
+                                Text(residence.formattedLocation)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.secondary)
+                            }
                             
                             Spacer()
                             
-                            HeartButton(isLiked: $residence.favorite, likedColor: .red)
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text(residence.formattedPrice)
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.right.circle.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.black)
+                                }
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .cornerRadius(6)
+                            }
                         }
-                        .padding()
                     }
-                }
-                
-                // 2. Info Content
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text(residence.name)
-                            .font(.system(size: 20, weight: .regular))
-                        Spacer()
-                        Text(residence.formattedPrice)
-                            .font(.system(size: 22, weight: .regular))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    
+                    HStack(spacing: 0) {
+                        ResidenceCharacteristics(text: residence.formattedNumberOfBeds, iconName: "bed.double.fill")
+                        ResidenceCharacteristics(text: residence.formattedNumberOfbaths, iconName: "bathtub.fill")
+                        ResidenceCharacteristics(text: residence.formattedNumberOfGarages, iconName: "door.garage.closed")
                     }
-                    
-                    Text(residence.formattedLocation)
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(.secondary)
-                    
+                    .padding(.vertical, 16)
                 }
-                .padding(16)
-                
-                HStack(spacing: 0) {
-                    ResidenceCharacteristics(text: residence.formattedNumberOfBeds, iconName: "bed.double.fill")
-                    ResidenceCharacteristics(text: residence.formattedNumberOfbaths, iconName: "bathtub.fill")
-                    ResidenceCharacteristics(text: residence.formattedNumberOfGarages, iconName: "door.garage.closed")
-                }
-                .padding(.vertical,12)
+                .background(Color.white)
+                .cornerRadius(24)
+                .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .onTapGesture {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                                onTap()
+                            }
+                        }
             }
-            .background(Color.white)
-            .cornerRadius(24)
-            .foregroundColor(.black)
-            .padding(.vertical,8)
-            .padding(.horizontal,4)
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
         }
     }
 }
 
 #Preview {
-    // Note: We use a State variable or .constant here
     ResidenceView(residence: .constant(Residence(
         name: "Modern Villa",
         address: "123 luxury Way",
@@ -91,5 +109,5 @@ struct ResidenceView: View {
         mainImageBase64: "house1".asAssetBase64,
         galleryImagesBase64: ["house1".asAssetBase64],
         favorite: false
-    )))
+    )),onTap: {}).environment(AuthManager())
 }

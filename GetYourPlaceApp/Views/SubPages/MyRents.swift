@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MyRents: View {
     @StateObject var viewModel: MyRentsViewModel
+    @State private var selectedResidence: Residence? = nil
     
     init(viewModel: MyRentsViewModel = MyRentsViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -11,6 +12,21 @@ struct MyRents: View {
         ZStack(alignment: .bottom) {
             Color(red: 0.1, green: 0.1, blue: 0.1)
                 .ignoresSafeArea()
+            
+            if let residence = selectedResidence {
+                            ResidenceDetailPopup(
+                                residence: residence,
+                                isPresented: Binding(
+                                    get: { selectedResidence != nil },
+                                    set: { if !$0 { selectedResidence = nil } }
+                                )
+                            )
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.9)),
+                                removal: .opacity.combined(with: .scale(scale: 1.1))
+                            ))
+                            .zIndex(100) // Ensure it's above everything else
+                        }
             
             VStack(spacing: 0) {
                 Button(action: {
@@ -33,7 +49,10 @@ struct MyRents: View {
                                 residences: $viewModel.publishResidences,
                                 isLoading: viewModel.isLoading,
                                 isFetchingMore: viewModel.isFetchingMore,
-                                onLoadMore: { }
+                                onLoadMore: { },
+                                onSelect: { residence in
+                                                        selectedResidence = residence
+                                                    }
                             )
                         }
                         
@@ -42,12 +61,14 @@ struct MyRents: View {
                                 residences: $viewModel.publishResidences,
                                 isLoading: viewModel.isLoading,
                                 isFetchingMore: viewModel.isFetchingMore,
-                                onLoadMore: { }
+                                onLoadMore: { },
+                                onSelect: { residence in
+                                                        selectedResidence = residence
+                                                    }
                             )
                         }
                     }
                 }
-
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
@@ -56,5 +77,5 @@ struct MyRents: View {
 
 // Ensure you have a mock for the preview to work
 #Preview {
-    MyRents()
+    MyRents().environment(AuthManager())
 }

@@ -7,6 +7,8 @@ struct ResidenceListView: View {
     var isScrollable: Bool = true // Add this flag
     let onLoadMore: () -> Void
     
+    var onSelect: (Residence) -> Void
+    
     var body: some View {
         if isScrollable {
             ScrollView(.vertical, showsIndicators: false) {
@@ -36,7 +38,9 @@ struct ResidenceListView: View {
     
     private var residenceList: some View {
         ForEach($residences) { $residence in
-            ResidenceView(residence: $residence)
+            ResidenceView(residence: $residence, onTap: {
+                                    onSelect(residence)
+                                })
                 .onAppear {
                     if residence.id == residences.last?.id {
                         onLoadMore()
@@ -71,11 +75,12 @@ struct ResidenceListView: View {
         ZStack {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             ResidenceListView(
-                residences: .constant([]), // Fixed with .constant
-                isLoading: true,           // Set to true to actually see skeletons
+                residences: .constant([]),
+                isLoading: true,
                 isFetchingMore: false,
                 isScrollable: true,
-                onLoadMore: {}
+                onLoadMore: {},
+                onSelect: { _ in } // Added empty closure
             )
         }
         .tabItem { Label("Loading", systemImage: "hourglass") }
@@ -84,11 +89,12 @@ struct ResidenceListView: View {
         ZStack {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             ResidenceListView(
-                residences: .constant([.mock, .mock, .mock]), // Fixed with .constant
+                residences: .constant([.mock, .mock, .mock]),
                 isLoading: false,
                 isFetchingMore: false,
                 isScrollable: true,
-                onLoadMore: { print("Load more triggered") }
+                onLoadMore: { print("Load more triggered") },
+                onSelect: { residence in print("Selected: \(residence.name)") } // Added closure
             )
         }
         .tabItem { Label("Data", systemImage: "list.bullet") }
@@ -98,11 +104,12 @@ struct ResidenceListView: View {
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             AccordionView(text: .constant("Test Accordion")) {
                 ResidenceListView(
-                    residences: .constant([.mock]), // Fixed with .constant
+                    residences: .constant([.mock]),
                     isLoading: false,
                     isFetchingMore: false,
                     isScrollable: false,
-                    onLoadMore: {}
+                    onLoadMore: {},
+                    onSelect: { _ in } // Added empty closure
                 )
             }
         }

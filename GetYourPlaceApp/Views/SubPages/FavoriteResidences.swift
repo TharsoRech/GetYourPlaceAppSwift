@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FavoriteResidences: View {
     @StateObject var viewModel: FavoriteResidencesViewModel
+    @State private var selectedResidence: Residence? = nil
     
     init(viewModel: FavoriteResidencesViewModel = FavoriteResidencesViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -20,9 +21,27 @@ struct FavoriteResidences: View {
                     residences: $viewModel.favoritesResidences,
                     isLoading: viewModel.isLoading,
                     isFetchingMore: viewModel.isFetchingMore,
-                    onLoadMore: { }
+                    onLoadMore: { },
+                    onSelect: { residence in
+                                            selectedResidence = residence
+                                        }
                 ).padding(16)
             }
+            
+            if let residence = selectedResidence {
+                            ResidenceDetailPopup(
+                                residence: residence,
+                                isPresented: Binding(
+                                    get: { selectedResidence != nil },
+                                    set: { if !$0 { selectedResidence = nil } }
+                                )
+                            )
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.9)),
+                                removal: .opacity.combined(with: .scale(scale: 1.1))
+                            ))
+                            .zIndex(100) // Ensure it's above everything else
+                        }
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
@@ -30,5 +49,5 @@ struct FavoriteResidences: View {
 
 // Ensure you have a mock for the preview to work
 #Preview {
-    FavoriteResidences()
+    FavoriteResidences().environment(AuthManager())
 }
