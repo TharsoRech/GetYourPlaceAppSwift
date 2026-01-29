@@ -4,37 +4,34 @@ struct ResidenceDetailPopup: View {
     let residence: Residence
     @Binding var isPresented: Bool
     
+    // Performance Optimization States
+    @State private var isLoading = true
+    @State private var allImages: [String] = []
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // 1. FULL SCREEN DIMMED BACKGROUND
-                // This makes the user realize they are in a modal layer
                 Color.black.opacity(0.7)
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation(.spring()) { isPresented = false }
                     }
                 
-                // 2. Main Popup Container
                 VStack(spacing: 0) {
                     imageHeaderSection
                     
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 20) {
                             titleAndPriceSection
-                            
                             Divider().background(Color.white.opacity(0.2))
-                            
                             infoGridSection
-                            
-                            gallerySection
                         }
                         .padding(24)
+                        .redacted(reason: isLoading ? .placeholder : [])
                     }
                     
                     bottomActionBar
                 }
-                // Setting width to 90% of the screen and height to 80% to ensure it fits all devices
                 .frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.8)
                 .background(
                     ZStack {
@@ -55,25 +52,27 @@ struct ResidenceDetailPopup: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .ignoresSafeArea()
+        .onAppear {
+            loadDataSequentially()
+        }
     }
     
-    // --- RESTORED ORIGINAL STYLES ---
-
+    // MARK: - Subcomponents
+    
     private var imageHeaderSection: some View {
-        ZStack(alignment: .bottomLeading) {
-            if let uiImage = decodeBase64(residence.mainImageBase64) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
+        ZStack {
+            if isLoading {
                 Rectangle()
                     .fill(Color.white.opacity(0.1))
-                    .overlay(Image(systemName: "house.fill").foregroundColor(.white.opacity(0.2)))
+                    .shimmering()
+            } else {
+                ImageCarousel(images: allImages)
+                    .transition(.opacity)
             }
         }
         .frame(height: 220)
         .clipped()
-        .cornerRadius(28, corners: [.topLeft, .topRight])
+        .cornerRadius(28, corners: [.topLeft, .topRight]) // This uses the extension below
     }
     
     private var titleAndPriceSection: some View {
@@ -87,9 +86,7 @@ struct ResidenceDetailPopup: View {
                     .font(.footnote)
                     .foregroundColor(.gray)
             }
-            
             Spacer()
-            
             Text(residence.formattedPrice)
                 .font(.headline)
                 .foregroundColor(.white)
@@ -109,7 +106,6 @@ struct ResidenceDetailPopup: View {
                 Spacer()
                 InfoItem(icon: "square.split.2x2.fill", text: "\(Int(residence.squareFootage)) sqft")
             }
-            
             HStack {
                 InfoItem(icon: "car.fill", text: residence.formattedNumberOfGarages)
                 Spacer()
@@ -120,36 +116,14 @@ struct ResidenceDetailPopup: View {
         }
     }
     
-    private var gallerySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Gallery")
-                .font(.headline)
-                .foregroundColor(.white)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(residence.galleryImagesBase64, id: \.self) { base64 in
-                        if let uiImage = decodeBase64(base64) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 80, height: 80)
-                                .cornerRadius(12)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     private var bottomActionBar: some View {
-        Button(action: { /* Booking or Contact Logic */ }) {
+        Button(action: { }) {
             Text("Contact Person")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 55)
-                .background(Color.white.opacity(0.1)) // Restored original color
+                .background(Color.white.opacity(0.1))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
@@ -157,9 +131,10 @@ struct ResidenceDetailPopup: View {
                 )
         }
         .padding(.horizontal, 24)
-        .padding(.bottom, 24)
+        .padding(.bottom, 36)
+        .disabled(isLoading)
     }
-    
+
     private var closeButton: some View {
         Button(action: {
             withAnimation(.spring()) { isPresented = false }
@@ -173,38 +148,46 @@ struct ResidenceDetailPopup: View {
         }
         .padding(16)
     }
-    
-    struct BlurView: UIViewRepresentable {
-        var style: UIBlurEffect.Style
-        func makeUIView(context: Context) -> UIVisualEffectView {
-            UIVisualEffectView(effect: UIBlurEffect(style: style))
+
+    private func loadDataSequentially() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            var images = [residence.mainImageBase64]
+            images.append(contentsOf: residence.galleryImagesBase64)
+            let filtered = images.filter { !$0.isEmpty }
+            
+            // Artificial delay to ensure the popup animation finishes first
+            usleep(300_000)
+            
+            DispatchQueue.main.async {
+                self.allImages = filtered
+                withAnimation(.easeOut(duration: 0.5)) {
+                    self.isLoading = false
+                }
+            }
         }
-        func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
-    }
-    
-    private func decodeBase64(_ string: String) -> UIImage? {
-        guard let data = Data(base64Encoded: string) else { return nil }
-        return UIImage(data: data)
     }
 }
 
-// RESTORED ORIGINAL INFO ITEM & SHAPES
+// MARK: - Supporting Views & Helpers
+
 struct InfoItem: View {
     let icon: String
     let text: String
-    
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .foregroundColor(.gray)
-                .font(.system(size: 14))
-            Text(text)
-                .foregroundColor(.white.opacity(0.8))
-                .font(.system(size: 13, weight: .medium))
+            Image(systemName: icon).foregroundColor(.gray).font(.system(size: 14))
+            Text(text).foregroundColor(.white.opacity(0.8)).font(.system(size: 13, weight: .medium))
         }
     }
 }
 
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    func makeUIView(context: Context) -> UIVisualEffectView { UIVisualEffectView(effect: UIBlurEffect(style: style)) }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+
+// This extension fixes the "Extra argument 'corners'" error
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
@@ -214,7 +197,6 @@ extension View {
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
-
     func path(in rect: CGRect) -> Path {
         let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
         return Path(path.cgPath)
