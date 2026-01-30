@@ -24,7 +24,6 @@ class HomePageViewModel: ObservableObject {
     private var defaultFilterRunner = BackgroundTaskRunner<[String]>()
     private var customFilterRunner = BackgroundTaskRunner<ResidenceFilter>()
     private var notificationRunner = BackgroundTaskRunner<[String]>()
-    private var conversationRunner = BackgroundTaskRunner<[Conversation]>()
     
     private var cancellables = Set<AnyCancellable>()
     private var profileRunner = BackgroundTaskRunner<UserProfile>()
@@ -53,7 +52,6 @@ class HomePageViewModel: ObservableObject {
               GetRecentResidences()
               fetchCustomFilters()
               fetchNotifications()
-              fetchConversations()
               fetchUserProfile()
         }
     }
@@ -232,18 +230,7 @@ class HomePageViewModel: ObservableObject {
             return results;
         }
     }
-    
-    func fetchConversations() {
-        conversationRunner.runInBackground {
-            let results = await self.chatRepository.getConversations()
-            
-            await MainActor.run {
-                self.conversations = results
-            }
-            
-            return results
-        }
-    }
+
     
     func fetchUserProfile() {
         profileRunner.runInBackground {

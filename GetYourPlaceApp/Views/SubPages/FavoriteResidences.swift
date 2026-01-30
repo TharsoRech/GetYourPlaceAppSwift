@@ -49,5 +49,5 @@ struct FavoriteResidences: View {
 
 // Ensure you have a mock for the preview to work
 #Preview {
-    FavoriteResidences().environment(AuthManager())
+    FavoriteResidences().environment(AuthManager.mock(role: .renter))
 }

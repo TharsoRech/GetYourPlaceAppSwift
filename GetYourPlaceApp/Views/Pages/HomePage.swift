@@ -25,12 +25,12 @@ struct HomePage: View {
             }
             else if(selectedTab == "heart"){
                 AuthGate {
-                    FavoriteResidences()
+                    InterestsView()
                 }
             }
-            else if(selectedTab == "chat"){
+            else if(selectedTab == "macths"){
                 AuthGate {
-                    ConversationsListView(chatList: $viewModel.conversations)
+                    MatchsView()
                 }
             }
             else if(selectedTab == "profile"){
@@ -39,14 +39,13 @@ struct HomePage: View {
                 }
             }
 
-            // 5. CUSTOM FLOATING BOTTOM BAR
             VStack {
                 Spacer()
                 HStack(spacing: 0) {
                     MenuItem(icon: "house.fill", label: "Home", isSelected: selectedTab == "home") { selectedTab = "home" }
                     MenuItem(icon: "key.fill", label: "My Rents", isSelected: selectedTab == "rents") { selectedTab = "rents" }
-                    MenuItem(icon: "heart.fill", label: "Saved", isSelected: selectedTab == "heart") { selectedTab = "heart" }
-                    MenuItem(icon: "bubble.left.fill", label: "Chat", isSelected: selectedTab == "chat") { selectedTab = "chat" }
+                    MenuItem(icon: "heart.fill", label: "Interests", isSelected: selectedTab == "heart") { selectedTab = "heart" }
+                    MenuItem(icon: "bubble.left.fill", label: "Matchs", isSelected: selectedTab == "macths") { selectedTab = "macths" }
                     MenuItem(icon: "person.circle.fill", label: "Profile", isSelected: selectedTab == "profile") { selectedTab = "profile" }
                 }
                 .padding(.vertical, 4)

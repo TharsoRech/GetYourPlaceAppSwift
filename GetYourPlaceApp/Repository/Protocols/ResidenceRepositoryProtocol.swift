@@ -8,4 +8,6 @@ protocol ResidenceRepositoryProtocol {
     func getPublishResidences() async -> [Residence]
     
     func getFavoritesResidences() async -> [Residence]
+    
+    func getInterestedResidences() async -> [Residence]
 }

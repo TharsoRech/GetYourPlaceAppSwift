@@ -1,11 +1,15 @@
 import SwiftUI
 
 struct ConversationsListView: View {
-    @Binding var chatList: [Conversation]
+    @StateObject var viewModel: ConversationListViewModel
+    
+    init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     var body: some View {
         NavigationStack {
-            List($chatList) { $chat in
+            List($viewModel.conversations) { $chat in
                 NavigationLink {
                     ChatView(title: $chat.name, messages: $chat.ConversationMessages)
                 } label: {
@@ -35,26 +39,5 @@ struct ConversationsListView: View {
 }
 
 #Preview {
-    @Previewable @State var mockData = [
-        Conversation(
-            name: "James Wilson",
-            time: "10:24 AM",
-            imageName: "person.circle.fill",
-            unreadCount: 2,
-            ConversationMessages: [
-                ChatMessage(text: "Are we still meeting at 5?", isSender: false, timestamp: Date())
-            ]
-        ),
-        Conversation(
-            name: "Sarah Parker",
-            time: "Yesterday",
-            imageName: "person.crop.circle",
-            unreadCount: 0,
-            ConversationMessages: [
-                ChatMessage(text: "The new UI looks great!", isSender: false, timestamp: Date())
-            ]
-        )
-    ]
-    
-    return ConversationsListView(chatList: $mockData)
+    return ConversationsListView().environment(AuthManager.mock(role: .renter))
 }
