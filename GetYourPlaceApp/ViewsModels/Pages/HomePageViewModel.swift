@@ -59,10 +59,9 @@ class HomePageViewModel: ObservableObject {
     func PerformSearch() {
         print("Searching for: \(searchText)")
         
-        // 1. If search text is empty and no filters are active, show everything
         guard !searchText.isEmpty else {
             if isFilterActive {
-                FilterResidences() // Re-apply custom filters if they exist
+                FilterResidences()
             } else {
                 self.residences = self.allResidences
                 OrderResidences()
@@ -70,8 +69,6 @@ class HomePageViewModel: ObservableObject {
             return
         }
         
-        // 2. Filter the existing data based on text
-        // We filter from 'allResidences' to ensure we search the full dataset
         let filtered = allResidences.filter { residence in
             let nameMatch = residence.name.localizedCaseInsensitiveContains(searchText)
             let addressMatch = residence.address.localizedCaseInsensitiveContains(searchText)
@@ -80,12 +77,8 @@ class HomePageViewModel: ObservableObject {
             return nameMatch || addressMatch || locationMatch
         }
         
-        // 3. Update the UI
         Task { @MainActor in
             self.residences = filtered
-            
-            // 4. If custom filters (Baths, Beds, etc.) are also active,
-            // we should narrow down the search results further
             if isFilterActive {
                 self.residences = await self.residenceRepository.filterResidences(self.residences, with: self.currentFilter)
             }
@@ -110,15 +103,12 @@ class HomePageViewModel: ObservableObject {
         case "Price":
             residences.sort { $0.price < $1.price }
         case "Newest":
-            // Note: Requires a 'createdAt' date property in Residence model
             residences.sort { $0.createdAt > $1.createdAt }
             print("Sorting by Newest")
         case "Rating":
-            // Note: Requires a 'rating' property in Residence model
             residences.sort { $0.rating > $1.rating }
             print("Sorting by Rating")
         case "Distance":
-            // Note: Requires location coordinates and user current location this can be implemented on the future
             print("Sorting by Distance")
         case "Category":
             residences.sort { $0.type < $1.type }
@@ -149,12 +139,7 @@ class HomePageViewModel: ObservableObject {
         residenceRunner.runInBackground {
             self.isLoading = true
             let results =  await self.residenceRepository.getRecentResidences()
-            
-            // Print the count and details of the results
-            print("✅ Successfully fetched \(results.count) residences")
-            for residence in results {
-                print("🏠 Found: \(residence.name) at \(residence.location)")
-            }
+        
             
             await MainActor.run {
                 self.allResidences = results;
@@ -199,12 +184,7 @@ class HomePageViewModel: ObservableObject {
             }
   
             let results =  await self.residenceRepository.filterResidences(self.allResidences, with: self.currentFilter)
-            
-            // Print the count and details of the results
-            print("✅ Successfully fetched \(results.count) residences")
-            for residence in results {
-                print("🏠 Found: \(residence.name) at \(residence.location)")
-            }
+        
             
             await MainActor.run {
                 self.residences = results;
@@ -246,7 +226,6 @@ class HomePageViewModel: ObservableObject {
     
     
     func loadNextPage() {
-            // Prevent multiple simultaneous loads or loading when no data is left
             guard !isFetchingMore && !isLoading && canLoadMore else { return }
             
             residenceRunner.runInBackground {
@@ -258,7 +237,6 @@ class HomePageViewModel: ObservableObject {
                 
                 let nextPage = self.currentPage + 1
                 
-                // repository call must support page parameter: getRecentResidences(page:)
                 let results = await self.residenceRepository.getRecentResidences()
                 
                 await MainActor.run {

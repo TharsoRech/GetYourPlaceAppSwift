@@ -3,6 +3,7 @@ import SwiftUI
 struct MatchsView: View {
     @State private var selectedTab = 0
     @State private var navigationPath = NavigationPath()
+    @Environment(AuthManager.self) var authManager
     
     init() {
         UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.lightGray], for: .normal)
@@ -36,6 +37,12 @@ struct MatchsView: View {
     }
 }
 
-#Preview {
-    MatchsView().environment(AuthManager.mock(role: .renter))
+#Preview("Owner View") {
+    MatchsView()
+        .environment(AuthManager.mock(role: .owner))
+}
+
+#Preview("Renter View") {
+    MatchsView()
+        .environment(AuthManager.mock(role: .renter))
 }

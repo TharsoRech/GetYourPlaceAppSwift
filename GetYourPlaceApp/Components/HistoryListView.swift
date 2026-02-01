@@ -8,59 +8,96 @@ struct HistoryListView: View {
     
     var body: some View {
         ZStack {
+            // Background color for the entire view
             Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
+            
             List {
                 ForEach($profiles) { $profile in
+                    // Only show profiles matching the current filter
                     if profile.status == filter {
                         HStack(spacing: 15) {
+                            // Profile Info
                             VStack(alignment: .leading) {
-                                Text(profile.name).font(.headline)
-                                Text(profile.residenceName).font(.caption).foregroundColor(.gray)
+                                Text(profile.name)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                Text(profile.residenceName)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
                             }
                             
                             Spacer()
                             
+                            // 1. Chat Action (Only for Accepted status)
                             if filter == .accepted {
-                                // Use a Button instead of NavigationLink to trigger the parameter
                                 Button {
                                     onChatTap(profile)
                                 } label: {
                                     Image(systemName: "message.fill")
                                         .foregroundColor(.white)
                                         .padding(8)
+                                        .background(Color.blue.opacity(0.2))
+                                        .clipShape(Circle())
                                 }
                                 .buttonStyle(.plain)
                             }
                             
-                            Button("Reset") {
-                                withAnimation { profile.status = .pending }
+                            // 2. Status Logic: Show "Analyzing" vs "Reset"
+                            if profile.status == .pending {
+                                // Status indicator when pending
+                                HStack(spacing: 5) {
+                                    Image(systemName: " person.fill.viewfinder")
+                                        .font(.subheadline)
+                                    Text("Analyzing")
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                            } else {
+                                // Show Reset button only if NOT pending
+                                Button("Reset") {
+                                    withAnimation(.spring()) {
+                                        profile.status = .pending
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(.orange)
+                                .controlSize(.small)
                             }
-                            .buttonStyle(.bordered)
-                            .tint(.orange)
-                        }.listRowBackground(Color.clear)
+                        }
+                        .padding(.vertical, 4)
+                        .listRowBackground(Color.clear)
                     }
                 }
             }
-            .navigationTitle(filter.rawValue)
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
-        .scrollContentBackground(.hidden)
-                .navigationTitle(filter.rawValue)
+        .navigationTitle(filter.rawValue.capitalized)
     }
 }
 
+// MARK: - Preview Logic
 #Preview("History - Accepted List") {
     struct HistoryPreview: View {
         @State var mockProfiles = [
             InterestedProfile(name: "Jordan Lee", residenceName: "Beach House", imageUrl: "", status: .accepted),
-            InterestedProfile(name: "Taylor Reed", residenceName: "Mountain Cabin", imageUrl:  "", status: .accepted)
+            InterestedProfile(name: "Taylor Reed", residenceName: "Mountain Cabin", imageUrl: "", status: .accepted),
+            InterestedProfile(name: "Casey Blair", residenceName: "City Apartment", imageUrl: "", status: .pending)
         ]
         
         var body: some View {
-            HistoryListView(profiles: $mockProfiles, filter: .accepted) { profile in
-                // This satisfies the new onChatTap parameter
-                print("Preview: Chat opened for \(profile.name)")
+            NavigationStack {
+                HistoryListView(profiles: $mockProfiles, filter: .accepted) { profile in
+                    print("Preview: Chat opened for \(profile.name)")
+                }
+                .preferredColorScheme(.dark)
             }
-            .preferredColorScheme(.dark)
         }
     }
     return HistoryPreview()

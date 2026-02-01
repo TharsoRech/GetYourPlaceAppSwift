@@ -4,6 +4,7 @@ struct MatchsResidencesView: View {
     @StateObject private var viewModel: MatchsResidencesViewModel
     @Binding var selectedTab: Int
     @Binding var navigationPath: NavigationPath
+    @Environment(AuthManager.self) var authManager
     
     init(selectedTab: Binding<Int>,
          navigationPath: Binding<NavigationPath>,
@@ -20,10 +21,20 @@ struct MatchsResidencesView: View {
                     .transition(.opacity)
             } else {
                 TabView {
-                    DiscoveryView(profiles: $viewModel.profiles)
+                    if authManager.currentUser?.role == .owner {
+                        DiscoveryView(profiles: $viewModel.profiles)
+                            .tabItem {
+                                Label("Pending", systemImage: "square.stack.3d.up.fill")
+                            }
+                    }
+                    else{
+                        
+                        HistoryListView(profiles: $viewModel.profiles, filter: .pending) { _ in }
                         .tabItem {
                             Label("Pending", systemImage: "square.stack.3d.up.fill")
                         }
+                    }
+
                     
                     HistoryListView(profiles: $viewModel.profiles, filter: .accepted) { profile in
                         Task {
@@ -56,10 +67,18 @@ struct MatchsResidencesView: View {
     }
 }
 
-// FIX: Added required constant bindings for the preview
-#Preview {
+#Preview("Owner View") {
     MatchsResidencesView(
         selectedTab: .constant(0),
         navigationPath: .constant(NavigationPath())
     )
+        .environment(AuthManager.mock(role: .owner))
+}
+
+#Preview("Renter View") {
+    MatchsResidencesView(
+        selectedTab: .constant(0),
+        navigationPath: .constant(NavigationPath())
+    )
+        .environment(AuthManager.mock(role: .renter))
 }
