@@ -9,49 +9,50 @@ struct RentalHistoryView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
-                
-                List {
-                    if viewModel.isLoading && viewModel.rentals.isEmpty {
-                        ForEach(0..<5, id: \.self) { _ in
-                            rentalSkeletonRow
-                        }
-                    } else if viewModel.rentals.isEmpty {
-                        emptyStateView
-                    } else {
-                        ForEach(viewModel.rentals) { rental in
-                            rentalRow(rental)
-                        }
-                        .onDelete(perform: viewModel.deleteRental)
+        ZStack(alignment: .bottomTrailing) { // Alignment for the Floating Button
+            Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
+            
+            List {
+                if viewModel.isLoading && viewModel.rentals.isEmpty {
+                    ForEach(0..<5, id: \.self) { _ in
+                        rentalSkeletonRow
                     }
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-            }
-            .navigationTitle("Rental History")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { isShowingAddPopup = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.white)
+                } else if viewModel.rentals.isEmpty {
+                    emptyStateView
+                } else {
+                    ForEach(viewModel.rentals) { rental in
+                        rentalRow(rental)
                     }
+                    .onDelete(perform: viewModel.deleteRental)
                 }
             }
-            .sheet(isPresented: $isShowingAddPopup) {
-                AddRentalView { newRental in
-                    viewModel.addRental(newRental)
-                }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            
+            // --- Floating Add Button ---
+            Button(action: { isShowingAddPopup = true }) {
+                Image(systemName: "plus.circle.fill")
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.white)
+                    .background(Color.black.clipShape(Circle())) // Shadow contrast
+                    .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 5)
             }
-            .onAppear {
-                viewModel.fetchRentals()
+            .padding(.bottom, 64)
+            .padding(25) // Distance from edges
+        }
+        .sheet(isPresented: $isShowingAddPopup) {
+            AddRentalView { newRental in
+                viewModel.addRental(newRental)
             }
+        }
+        .onAppear {
+            viewModel.fetchRentals()
         }
         .preferredColorScheme(.dark)
     }
+    
+    // MARK: - Row Components (Unchanged)
     
     private func rentalRow(_ rental: RentalHistory) -> some View {
         HStack {
@@ -94,7 +95,7 @@ struct RentalHistoryView: View {
         }
         .padding(.vertical, 4)
         .listRowBackground(Color.white.opacity(0.05))
-        .shimmering() // Your custom modifier
+        .shimmering()
     }
     
     private var emptyStateView: some View {

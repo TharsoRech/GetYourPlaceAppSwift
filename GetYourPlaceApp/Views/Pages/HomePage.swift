@@ -51,7 +51,6 @@ struct HomePage: View {
                 .padding(.vertical, 4)
                 .padding(.horizontal, 16)
                 .cornerRadius(128)
-                .padding(.bottom, 10)
             }
         }
         .navigationBarBackButtonHidden(true)
