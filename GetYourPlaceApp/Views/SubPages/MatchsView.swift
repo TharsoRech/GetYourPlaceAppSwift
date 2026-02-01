@@ -2,13 +2,16 @@ import SwiftUI
 
 struct MatchsView: View {
     @State private var selectedTab = 0
-    @StateObject var favoritesVM = FavoriteResidencesViewModel()
-    @StateObject var interestedVM = InterestedResidencesViewModel()
+    @State private var navigationPath = NavigationPath()
     
     init() {
-        UISegmentedControl.appearance().selectedSegmentTintColor = .white
+        UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.lightGray], for: .normal)
+        
         UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
-        UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
+        
+        UISegmentedControl.appearance().backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        
+        UISegmentedControl.appearance().selectedSegmentTintColor = .white
     }
     
     var body: some View {
@@ -21,14 +24,13 @@ struct MatchsView: View {
             .padding()
             .background(Color(red: 0.1, green: 0.1, blue: 0.1))
             
-            TabView(selection: $selectedTab) {
-                MatchsResidencesView()
-                    .tag(0)
-                
-                ConversationsListView()
-                    .tag(1)
+            if selectedTab == 0 {
+                MatchsResidencesView(selectedTab: $selectedTab, navigationPath: $navigationPath)
+            } else {
+                ConversationsListView(navigationPath: $navigationPath)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            
+            Spacer(minLength: 0)
         }
         .background(Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea())
     }

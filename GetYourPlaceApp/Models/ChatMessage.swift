@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ChatMessage: Identifiable {
+struct ChatMessage: Identifiable, Hashable {
     let id = UUID()
     let text: String
     let isSender: Bool

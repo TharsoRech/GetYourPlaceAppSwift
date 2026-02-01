@@ -16,6 +16,7 @@ struct FavoriteResidences: View {
                 Text("Favorite Places")
                     .foregroundColor(.white)
                     .font(.system(size: 22, weight: .regular, design: .default))
+                    .padding(.top, 10)
                 Spacer()
                 ResidenceListView(
                     residences: $viewModel.favoritesResidences,

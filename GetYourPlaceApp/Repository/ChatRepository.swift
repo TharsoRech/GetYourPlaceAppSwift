@@ -1,7 +1,20 @@
 import Foundation
 class ChatRepository: ChatRepositoryProtocol {
+    func getConversation(profile: InterestedProfile) async -> Conversation {
+        try? await Task.sleep(for: .seconds(2))
+        
+        return Conversation(
+            name: profile.name,
+            time: "10:24 AM",
+            imageName: "person.circle.fill",
+            unreadCount: 2,
+            ConversationMessages: [
+                ChatMessage(text: "Hey! How's the project going?", isSender: false, timestamp: Date().addingTimeInterval(-3600)),
+                ChatMessage(text: "Are we still meeting at 5?", isSender: false, timestamp: Date())])
+            
+    }
+    
     func getConversations() async -> [Conversation] {
-        // Simulate network latency (0.5 seconds)
         try? await Task.sleep(for: .seconds(2))
         
         return [

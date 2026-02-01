@@ -1,27 +1,38 @@
 import SwiftUI
 
 struct ConversationsListView: View {
-    @StateObject var viewModel: ConversationListViewModel
+    @StateObject private var viewModel: ConversationListViewModel
+    @Binding var navigationPath: NavigationPath
     
-    init(viewModel: ConversationListViewModel = ConversationListViewModel()) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    init(navigationPath: Binding<NavigationPath>, viewModel: @autoclosure @escaping () -> ConversationListViewModel = ConversationListViewModel()) {
+        self._navigationPath = navigationPath
+        self._viewModel = StateObject(wrappedValue: viewModel())
     }
     
     var body: some View {
-        NavigationStack {
-            List($viewModel.conversations) { $chat in
-                NavigationLink {
-                    ChatView(title: $chat.name, messages: $chat.ConversationMessages)
-                } label: {
-                    ConversationRow(conversation: chat)
+        NavigationStack(path: $navigationPath) {
+            Group {
+                if viewModel.isLoading {
+                    List(0..<3) { _ in
+                        ConversationRowSkeleton()
+                            .listRowBackground(Color.clear)
+                    }
+                } else {
+                    List(viewModel.conversations) { chat in
+                        // This now works because Conversation is Hashable
+                        NavigationLink(value: chat) {
+                            ConversationRow(conversation: chat)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
                 }
-                .listRowBackground(Color.clear)
+            }
+            // This now works because Conversation is Hashable
+            .navigationDestination(for: Conversation.self) { chat in
+                ChatView(title: .constant(chat.name), messages: .constant(chat.ConversationMessages))
             }
             .listStyle(.plain)
-            .safeAreaInset(edge: .top) {
-                Color.clear.frame(height: 20)
-            }
-            
+            .animation(.easeInOut, value: viewModel.isLoading)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -32,12 +43,13 @@ struct ConversationsListView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea())
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
         .tint(.white)
     }
 }
 
 #Preview {
-    return ConversationsListView().environment(AuthManager.mock(role: .renter))
+    // Note: Ensure AuthManager is an ObservableObject
+    ConversationsListView(navigationPath: .constant(NavigationPath()))
+        .environmentObject(AuthManager.mock(role: .renter))
 }

@@ -279,5 +279,5 @@ class HomePageViewModel: ObservableObject {
 }
 
 #Preview {
-    HomePage()
+    HomePage().environment(AuthManager())
 }

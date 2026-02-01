@@ -2,7 +2,7 @@ import SwiftUI
 import Observation
 
 @Observable
-class AuthManager {
+class AuthManager: ObservableObject {
     var isAuthenticated: Bool = false
     private let cacheKey = "user_session"
     var currentUser: UserProfile?
