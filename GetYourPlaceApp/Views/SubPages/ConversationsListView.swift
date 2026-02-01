@@ -34,13 +34,6 @@ struct ConversationsListView: View {
             .listStyle(.plain)
             .animation(.easeInOut, value: viewModel.isLoading)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Messages")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.white)
-                }
-            }
             .scrollContentBackground(.hidden)
             .background(Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea())
         }

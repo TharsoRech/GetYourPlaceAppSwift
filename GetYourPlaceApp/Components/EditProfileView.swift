@@ -10,23 +10,17 @@ struct EditProfileView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 25) {
-                profileImageHeader
-                
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        CustomInputField(label: "Name", text: $profile.name.toUnwrapped)
-                        CustomDescriptionField(label: "About", text: $profile.bio.toUnwrapped)
                         CustomInputField(label: "Email", text: $profile.email.toUnwrapped)
                         CustomInputField(label: "Password", text: $profile.password.toUnwrapped, isSecure: true)
-                        CustomDropdownField(label: "Date of Birth", value: $profile.dob.toUnwrapped)
-                        CustomDropdownField(label: "Country/Region", value: $profile.country.toUnwrapped)
                         
                         logoutButton
                     }
                     .padding(.horizontal, 24)
                 }
                 
-                saveButton
+                SaveButton(profile: profile)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -38,8 +32,6 @@ struct EditProfileView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .padding(.bottom, 84)
     }
-    
-    // ... (profileImageHeader and saveButton same as your code)
     
     private var logoutButton: some View {
         Button(action: {
@@ -53,43 +45,6 @@ struct EditProfileView: View {
                         .background(Color.black)
                         .cornerRadius(12)
                 }
-    }
-
-    private var profileImageHeader: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Circle()
-                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                .frame(width: 160, height: 160)
-                .overlay(
-                    Image(systemName: "person.crop.circle.fill")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 140, height: 140)
-                        .foregroundColor(.gray.opacity(0.6))
-                        .clipShape(Circle())
-                )
-            
-            Circle()
-                .fill(Color.gray.opacity(0.9))
-                .frame(width: 38, height: 38)
-                .overlay(Image(systemName: "camera.fill").foregroundColor(.white).font(.system(size: 14)))
-                .offset(x: -8, y: -5)
-        }
-        .padding(.top, 10)
-    }
-    
-    private var saveButton: some View {
-        Button(action: { print("Saving: \(String(describing: profile.name))") }) {
-            Text("Save changes")
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 55)
-                .background(Color.black)
-                .cornerRadius(12)
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 20)
     }
 }
 

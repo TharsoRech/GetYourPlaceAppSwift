@@ -1,6 +1,12 @@
 import Foundation
 
 class UserRepository: UserRepositoryProtocol {
+    func getUserReviews() async -> [UserReview] {
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        
+        return UserReview.mockArray
+    }
+    
     func getUserConfiguration() async -> UserProfile {
         try? await Task.sleep(nanoseconds: 500_000_000) 
                 
@@ -14,5 +20,11 @@ class UserRepository: UserRepositoryProtocol {
                     role: .owner
                 )
     }
+    
+    func getRentalHistory() async -> [RentalHistory] {
+            // Simulate network delay
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            return RentalHistory.mockArray
+        }
 }
 

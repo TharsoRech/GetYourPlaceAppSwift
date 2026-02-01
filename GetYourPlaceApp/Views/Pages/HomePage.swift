@@ -35,7 +35,7 @@ struct HomePage: View {
             }
             else if(selectedTab == "profile"){
                 AuthGate {
-                    EditProfileView(profile: viewModel.profile)
+                    ProfileMainView(profile: viewModel.profile)
                 }
             }
 

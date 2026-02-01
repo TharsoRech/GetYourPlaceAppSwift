@@ -1,4 +1,4 @@
-enum UserRole: String, CaseIterable {
+enum UserRole: String, CaseIterable, Codable { // Added Codable here
     case owner = "Owner"
     case renter = "Renter"
     
