@@ -68,16 +68,19 @@ class MatchsResidencesViewModel: ObservableObject {
     }
     
     func openChat(for profile: InterestedProfile) {
-        print("ViewModel: Opening chat for \(profile.name)")
         selectedChatProfile = profile
     }
     
+    @MainActor
     func getConversation(profile: InterestedProfile) async -> Conversation {
         self.isLoading = true
-        let result =  await self.chatRepository.getConversation(profile:profile);
-        self.isLoading = false
         
-        return result;
+        // The actual data fetching happens in the background (via the Repository)
+        // but the execution resumes here on the Main Thread.
+        let result = await self.chatRepository.getConversation(profile: profile)
+        
+        self.isLoading = false
+        return result
     }
      
 }

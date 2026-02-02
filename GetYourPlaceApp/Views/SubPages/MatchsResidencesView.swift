@@ -3,16 +3,16 @@ import SwiftUI
 struct MatchsResidencesView: View {
     @StateObject private var viewModel: MatchsResidencesViewModel
     @Binding var selectedTab: Int
-    @Binding var navigationPath: NavigationPath
+    @Binding var activeConversation: Conversation?
     @Environment(AuthManager.self) var authManager
     
     init(selectedTab: Binding<Int>,
-         navigationPath: Binding<NavigationPath>,
-         viewModel: @autoclosure @escaping () -> MatchsResidencesViewModel = MatchsResidencesViewModel()) {
-        self._selectedTab = selectedTab
-        self._navigationPath = navigationPath
-        self._viewModel = StateObject(wrappedValue: viewModel())
-    }
+             activeConversation: Binding<Conversation?>,
+             viewModel: @autoclosure @escaping () -> MatchsResidencesViewModel = MatchsResidencesViewModel()) {
+            self._selectedTab = selectedTab
+            self._activeConversation = activeConversation
+            self._viewModel = StateObject(wrappedValue: viewModel())
+        }
     
     var body: some View {
         VStack {
@@ -40,11 +40,11 @@ struct MatchsResidencesView: View {
                         Task {
                             let conversation = await viewModel.getConversation(profile: profile)
                             
-                            // UI updates must happen on the Main Thread
                             await MainActor.run {
-                                selectedTab = 1
-                                navigationPath.append(conversation)
-                            }
+                                self.activeConversation = conversation
+                                
+                                self.selectedTab = 1
+                             }
                         }
                     }
                     .tabItem {
@@ -70,7 +70,7 @@ struct MatchsResidencesView: View {
 #Preview("Owner View") {
     MatchsResidencesView(
         selectedTab: .constant(0),
-        navigationPath: .constant(NavigationPath())
+        activeConversation: .constant(Conversation.mock)
     )
         .environment(AuthManager.mock(role: .owner))
 }
@@ -78,7 +78,7 @@ struct MatchsResidencesView: View {
 #Preview("Renter View") {
     MatchsResidencesView(
         selectedTab: .constant(0),
-        navigationPath: .constant(NavigationPath())
+        activeConversation: .constant(Conversation.mock)
     )
         .environment(AuthManager.mock(role: .renter))
 }

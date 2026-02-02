@@ -57,15 +57,24 @@ struct ChatView: View {
         newMessageText = ""
     }
 }
-#Preview("Chat Interface") {
-    NavigationStack {
-        ChatView(
-            title: .constant("James Wilson"),
-            messages: .constant([
-                ChatMessage(text: "Hey! How's the project?", isSender: false, timestamp: Date()),
-                ChatMessage(text: "Almost done!", isSender: true, timestamp: Date())
-            ])
-        )
-        .navigationBarTitleDisplayMode(.inline)
+struct ChatPreviewWrapper: View {
+    // 1. Create a real state property to hold the data
+    @State private var messages = [
+        ChatMessage(text: "Hey! How's the project?", isSender: false, timestamp: Date()),
+        ChatMessage(text: "Almost done!", isSender: true, timestamp: Date())
+    ]
+    
+    var body: some View {
+        NavigationStack {
+            ChatView(
+                title: .constant("James Wilson"),
+                messages: $messages 
+            )
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
+}
+
+#Preview("Chat Interface") {
+    ChatPreviewWrapper()
 }

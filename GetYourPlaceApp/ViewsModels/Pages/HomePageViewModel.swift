@@ -200,6 +200,7 @@ class HomePageViewModel: ObservableObject {
             await MainActor.run {
                 self.isLoading = true
             }
+            
             let results = await self.notificationRepository.getNotifications()
             
             await MainActor.run {
