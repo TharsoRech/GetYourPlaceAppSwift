@@ -92,22 +92,5 @@ struct ResidenceView: View {
 }
 
 #Preview {
-    ResidenceView(residence: .constant(Residence(
-        name: "Modern Villa",
-        address: "123 luxury Way",
-        location: "Los Angeles, CA",
-        type: "House",
-        price: 2500000.0,
-        numberOfRooms: 8,
-        numberOfBeds: 4,
-        baths: 3,
-        squareFootage: 3500.0,
-        hasGarage: true,
-        numberOfGarages: 1,
-        rating: 5.0,
-        createdAt: Date(),
-        mainImageBase64: "house1".asAssetBase64,
-        galleryImagesBase64: ["house1".asAssetBase64],
-        favorite: false
-    )),onTap: {}).environment(AuthManager())
+    ResidenceView(residence: .constant(Residence.mock),onTap: {}).environment(AuthManager())
 }

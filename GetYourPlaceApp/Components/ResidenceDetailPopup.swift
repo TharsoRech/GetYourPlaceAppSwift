@@ -23,8 +23,15 @@ struct ResidenceDetailPopup: View {
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 20) {
                             titleAndPriceSection
+                            
                             Divider().background(Color.white.opacity(0.2))
+                            
                             infoGridSection
+                            
+                            Divider().background(Color.white.opacity(0.2))
+                            
+                            // NEW: Description Section
+                            descriptionSection
                         }
                         .padding(24)
                         .redacted(reason: isLoading ? .placeholder : [])
@@ -72,7 +79,7 @@ struct ResidenceDetailPopup: View {
         }
         .frame(height: 220)
         .clipped()
-        .cornerRadius(28, corners: [.topLeft, .topRight]) // This uses the extension below
+        .cornerRadius(28, corners: [.topLeft, .topRight])
     }
     
     private var titleAndPriceSection: some View {
@@ -115,6 +122,20 @@ struct ResidenceDetailPopup: View {
             }
         }
     }
+
+    // NEW: Description Section Implementation
+    private var descriptionSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("About this property")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            Text(residence.description.isEmpty ? "No description provided." : residence.description)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+                .lineSpacing(4)
+        }
+    }
     
     private var bottomActionBar: some View {
         Button(action: { }) {
@@ -150,24 +171,19 @@ struct ResidenceDetailPopup: View {
     }
 
     private func loadDataSequentially() {
-        // Capture residence to avoid threading issues
         let residenceData = residence
-        
         DispatchQueue.global(qos: .userInitiated).async {
             var base64Strings = [residenceData.mainImageBase64]
             base64Strings.append(contentsOf: residenceData.galleryImagesBase64)
             
-            // Convert strings to UIImages HERE on the background thread
             let decodedImages = base64Strings.compactMap { base64String -> UIImage? in
                 guard let data = Data(base64Encoded: base64String) else { return nil }
                 return UIImage(data: data)
             }
             
-            // Brief sleep to let the UI animation breathe
             usleep(200_000)
             
             DispatchQueue.main.async {
-                // Now the Main Thread just receives finished objects
                 self.allImages = decodedImages
                 withAnimation(.easeOut(duration: 0.5)) {
                     self.isLoading = false
