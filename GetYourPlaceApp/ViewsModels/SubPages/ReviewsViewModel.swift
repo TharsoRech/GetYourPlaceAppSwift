@@ -6,7 +6,7 @@ class ReviewsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var reviews: [UserReview] = []
     
-    private var rentalRunner = BackgroundTaskRunner<[UserReview]>()
+    private var reviewRunner = BackgroundTaskRunner<[UserReview]>()
     private let userRepository: UserRepositoryProtocol
     
     init(userRepository: UserRepositoryProtocol = UserRepository()) {
@@ -16,7 +16,7 @@ class ReviewsViewModel: ObservableObject {
     func fetchReviews() {
         guard !isLoading else { return }
         
-        rentalRunner.runInBackground {
+        reviewRunner.runInBackground {
             await MainActor.run {
                 self.isLoading = true
             }

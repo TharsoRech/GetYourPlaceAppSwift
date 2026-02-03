@@ -2,7 +2,10 @@ import SwiftUI
 import Observation
 
 @Observable
-class UserProfile: Codable {
+class UserProfile: Codable, Identifiable {
+    // 1. Add id for Identifiable conformance
+    var id: UUID = UUID()
+    
     var name: String?
     var email: String?
     var password: String?
@@ -12,7 +15,9 @@ class UserProfile: Codable {
     var role: UserRole?
     var base64Image: String?
 
+    // 2. Updated Initializer to accept optional id
     init(
+        id: UUID = UUID(),
         name: String? = nil,
         email: String? = nil,
         password: String? = nil,
@@ -22,6 +27,7 @@ class UserProfile: Codable {
         role: UserRole? = nil,
         base64Image: String? = nil
     ) {
+        self.id = id
         self.name = name
         self.email = email
         self.password = password
@@ -32,12 +38,17 @@ class UserProfile: Codable {
         self.base64Image = base64Image
     }
 
+    // 3. Exclude 'id' from CodingKeys so it doesn't try to send/receive it from JSON
     enum CodingKeys: String, CodingKey {
         case name, email, password, dob, country, bio, role, base64Image
     }
 
+    // 4. Decodable Implementation
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        // We initialize id with a new value since it's not in the JSON
+        self.id = UUID()
+        
         name = try container.decodeIfPresent(String.self, forKey: .name)
         email = try container.decodeIfPresent(String.self, forKey: .email)
         password = try container.decodeIfPresent(String.self, forKey: .password)
@@ -48,6 +59,7 @@ class UserProfile: Codable {
         base64Image = try container.decodeIfPresent(String.self, forKey: .base64Image)
     }
 
+    // 5. Encodable Implementation
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
@@ -79,7 +91,6 @@ class UserProfile: Codable {
             country: "United Kingdom",
             bio: "Avid traveler, architecture lover, and host of three properties in London.",
             role: .owner,
-            // A simple 1x1 grey pixel Base64 for testing
             base64Image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
         )
     }
