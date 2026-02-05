@@ -3,7 +3,10 @@ import PhotosUI
 
 struct RegisterResidenceView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var residences: [Residence]
+    
+    // Logic for Edit vs Create
+    var residenceToEdit: Residence?
+    var onSave: (Residence) -> Void
     
     // --- State Properties ---
     @State private var name = ""
@@ -12,7 +15,6 @@ struct RegisterResidenceView: View {
     @State private var location = ""
     @State private var type = "House"
     @State private var priceText = ""
-    
     @State private var rooms = 1
     @State private var beds = 1
     @State private var baths = 1
@@ -94,15 +96,14 @@ struct RegisterResidenceView: View {
                         Text("Price:")
                             .foregroundColor(.white)
                         Spacer()
-                        TextField("e.g. 1200 or Negotiable", text: $priceText)
+                        TextField("e.g. 1200", text: $priceText)
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.numbersAndPunctuation)
-                            .onChange(of: priceText) { oldValue, newValue in
+                            .onChange(of: priceText) { _, newValue in
                                 formatPriceInput(newValue)
                             }
                     }
                     
-                    // Steppers restricted to positive numbers
                     Stepper("Rooms: \(rooms)", value: $rooms, in: 0...50)
                     Stepper("Beds: \(beds)", value: $beds, in: 0...50)
                     Stepper("Baths: \(baths)", value: $baths, in: 0...20)
@@ -119,7 +120,7 @@ struct RegisterResidenceView: View {
                 
                 Section {
                     Button(action: save) {
-                        Text("Register Property")
+                        Text(residenceToEdit == nil ? "Register Property" : "Save Changes")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                             .bold()
@@ -131,17 +132,21 @@ struct RegisterResidenceView: View {
                 }
                 .listRowBackground(Color.clear)
             }
-            .navigationTitle("New Property")
+            .navigationTitle(residenceToEdit == nil ? "New Property" : "Edit Property")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(.white)
+                    Button("Cancel") { dismiss() }.foregroundColor(.white)
                 }
             }
             .scrollContentBackground(.hidden)
             .background(customDark)
             .preferredColorScheme(.dark)
+            .onAppear {
+                if let res = residenceToEdit {
+                    populateFields(from: res)
+                }
+            }
             .onChange(of: mainImageItem) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
@@ -165,38 +170,44 @@ struct RegisterResidenceView: View {
     
     // MARK: - Logic Helpers
     
+    private func populateFields(from res: Residence) {
+        name = res.name
+        description = res.description
+        address = res.address
+        location = res.location
+        type = res.type
+        priceText = "\(Int(res.price))"
+        rooms = res.numberOfRooms
+        beds = res.numberOfBeds
+        baths = res.baths
+        sqft = res.squareFootage
+        hasGarage = res.hasGarage
+        numberOfGarages = res.numberOfGarages
+        isPublished = res.isPublished
+        mainImageBase64 = res.mainImageBase64
+        galleryBase64 = res.galleryImagesBase64
+        formatPriceInput(priceText)
+    }
+
     private func formatPriceInput(_ value: String) {
-        // Remove non-numeric characters to see if it's a number
         let digits = value.filter { $0.isNumber }
-        
-        // If it's purely text (like "Negotiable"), don't format it
         if digits.isEmpty { return }
-        
-        // If it's numeric, format it as currency
         if let number = Int(digits) {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
             formatter.currencySymbol = "$"
             formatter.maximumFractionDigits = 0
-            
             if let formatted = formatter.string(from: NSNumber(value: number)) {
-                // Check to prevent infinite loop of onChange
-                if priceText != formatted {
-                    priceText = formatted
-                }
+                if priceText != formatted { priceText = formatted }
             }
         }
     }
     
     func save() {
-        let cleanPrice = priceText
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
-            .trimmingCharacters(in: .whitespaces)
-        
+        let cleanPrice = priceText.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "").trimmingCharacters(in: .whitespaces)
         let finalPrice = Double(cleanPrice) ?? 0.0
         
-        let newProperty = Residence(
+        let residence = Residence(
             name: name,
             description: description,
             address: address,
@@ -209,14 +220,15 @@ struct RegisterResidenceView: View {
             squareFootage: sqft,
             hasGarage: hasGarage,
             numberOfGarages: numberOfGarages,
-            rating: 0.0,
-            createdAt: Date(),
+            rating: residenceToEdit?.rating ?? 0.0,
+            createdAt: residenceToEdit?.createdAt ?? Date(),
             mainImageBase64: mainImageBase64,
             galleryImagesBase64: galleryBase64,
-            favorite: false,
+            favorite: residenceToEdit?.favorite ?? false,
             isPublished: isPublished
         )
-        residences.append(newProperty)
+        
+        onSave(residence)
         dismiss()
     }
     
@@ -226,6 +238,20 @@ struct RegisterResidenceView: View {
     }
 }
 
-#Preview {
-    RegisterResidenceView(residences: .constant([]))
+#Preview("Register New") {
+    RegisterResidenceView(
+        residenceToEdit: nil,
+        onSave: { updatedResidence in
+            print("Saved: \(updatedResidence.name)")
+        }
+    )
+}
+
+#Preview("Edit Existing") {
+    RegisterResidenceView(
+        residenceToEdit: Residence.mock,
+        onSave: { updatedResidence in
+            print("Updated: \(updatedResidence.name)")
+        }
+    )
 }

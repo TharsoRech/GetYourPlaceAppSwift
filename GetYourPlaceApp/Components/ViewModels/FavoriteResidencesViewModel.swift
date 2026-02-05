@@ -44,5 +44,11 @@ class FavoriteResidencesViewModel: ObservableObject {
 }
 
 #Preview {
-    FavoriteResidences()
+    FavoriteResidences(
+        viewModel: FavoriteResidencesViewModel(),
+        onSelect: { residence in
+            print("Selected: \(residence.name)")
+        }
+    )
+    .environment(AuthManager.mock(role: .renter))
 }

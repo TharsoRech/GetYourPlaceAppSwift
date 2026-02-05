@@ -34,17 +34,31 @@ struct EditProfileView: View {
     }
     
     private var logoutButton: some View {
-        Button(action: {
-                    authManager.logout() // Call the logout function
-                }) {
-                    Text("Log Out")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 55)
-                        .background(Color.black)
-                        .cornerRadius(12)
-                }
+        VStack{
+            Button(action: {
+                        authManager.logout()
+                    }) {
+                        Text("Log Out")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 55)
+                            .background(Color.black)
+                            .cornerRadius(12)
+                    }
+            
+            Button(action: {
+                authManager.logout()
+                    }) {
+                        Text("Remove Account")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 55)
+                            .background(Color.black)
+                            .cornerRadius(12)
+                    }
+        }
     }
 }
 

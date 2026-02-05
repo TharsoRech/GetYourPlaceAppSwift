@@ -76,10 +76,9 @@ class ResidenceRepository: ResidenceRepositoryProtocol {
     }
     
     func getPublishResidences() async -> [Residence] {
-        // Simulando delay de rede
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
-        return Residence.mocks
+        return Residence.mocks.filter { $0.isMine }
     }
 }
 

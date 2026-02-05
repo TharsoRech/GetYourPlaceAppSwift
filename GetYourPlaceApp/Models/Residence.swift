@@ -22,6 +22,7 @@ class Residence: Identifiable {
     var mainImageBase64: String
     var galleryImagesBase64: [String]
     var favorite: Bool = false
+    var isMine: Bool = false
     
     // MARK: - Formatters
     var formattedPrice: String {
@@ -39,7 +40,7 @@ class Residence: Identifiable {
     var formattedNumberOfbaths: String { "\(baths) Baths" }
     
     // MARK: - Initializer Updated
-    init(name: String, description: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int, rating: Double, createdAt: Date, mainImageBase64: String, galleryImagesBase64: [String], favorite: Bool, isPublished: Bool = false) {
+    init(name: String, description: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int, rating: Double, createdAt: Date, mainImageBase64: String, galleryImagesBase64: [String], favorite: Bool, isPublished: Bool = false,isMine: Bool = false) {
         self.name = name
         self.description = description
         self.address = address
@@ -58,6 +59,7 @@ class Residence: Identifiable {
         self.createdAt = createdAt
         self.favorite = favorite
         self.isPublished = isPublished
+        self.isMine = isMine
     }
     
     static var mock: Residence {
@@ -138,7 +140,8 @@ class Residence: Identifiable {
             createdAt: Date(),
             mainImageBase64: "house3".asAssetBase64,
             galleryImagesBase64: [] ,
-            favorite: false
+            favorite: false,
+            isMine: true
         )
     ] }
 }

@@ -40,6 +40,14 @@ class MyRentsViewModel: ObservableObject {
             return results
         }
     }
+    
+    func handleSave(_ residence: Residence) {
+        if let index = publishResidences.firstIndex(where: { $0.id == residence.id }) {
+            publishResidences[index] = residence
+        } else {
+            publishResidences.append(residence)
+        }
+    }
      
 }
 

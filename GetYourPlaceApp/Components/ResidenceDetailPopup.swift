@@ -1,80 +1,181 @@
 import SwiftUI
 
 struct ResidenceDetailPopup: View {
-    let residence: Residence
+    @State var residence: Residence
     @Binding var isPresented: Bool
-    @State private var allImages: [UIImage] = []
+    @Environment(AuthManager.self) var authManager
     
-    // Performance Optimization States
+    @State private var allImages: [UIImage] = []
     @State private var isLoading = true
+    @State private var showingEditSheet = false
+    
+    // Custom Styled Popup State
+    @State private var showingInterestPopup = false
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Color.black.opacity(0.7)
+                // 1. Main Background Dimmer
+                Color.black.opacity(0.8)
                     .ignoresSafeArea()
                     .onTapGesture {
-                        withAnimation(.spring()) { isPresented = false }
+                        // Prevent closing by mistake if the interest popup is active
+                        if !showingInterestPopup {
+                            withAnimation(.spring()) { isPresented = false }
+                        }
                     }
                 
+                // 2. Main Detail Card
                 VStack(spacing: 0) {
                     imageHeaderSection
                     
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 20) {
                             titleAndPriceSection
-                            
                             Divider().background(Color.white.opacity(0.2))
-                            
                             infoGridSection
-                            
                             Divider().background(Color.white.opacity(0.2))
-                            
-                            // NEW: Description Section
                             descriptionSection
                         }
                         .padding(24)
                         .redacted(reason: isLoading ? .placeholder : [])
                     }
                     
-                    bottomActionBar
+                    // Footer: Changes based on ownership
+                    HStack(spacing: 12) {
+                        if residence.isMine {
+                            editButton
+                        } else {
+                            bottomActionBar
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 36)
                 }
                 .frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.8)
                 .background(
                     ZStack {
                         BlurView(style: .systemThinMaterialDark)
-                        Color(red: 0.05, green: 0.05, blue: 0.07).opacity(0.8)
+                        Color(red: 0.05, green: 0.05, blue: 0.07).opacity(0.85)
                     }
                 )
                 .cornerRadius(32)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 32)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-                .overlay(alignment: .topTrailing) {
-                    closeButton
+                .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                .overlay(alignment: .topTrailing) { closeButton }
+                .shadow(color: .black.opacity(0.6), radius: 30, x: 0, y: 15)
+                
+                // 3. Custom Glass Interest Popup (The "Alert")
+                if showingInterestPopup {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    
+                    customInterestAlert
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                        .zIndex(2)
                 }
-                .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .ignoresSafeArea()
-        .onAppear {
-            loadDataSequentially()
+        .onAppear { loadDataSequentially() }
+        .sheet(isPresented: $showingEditSheet) {
+            RegisterResidenceView(residenceToEdit: residence) { updatedResidence in
+                self.residence = updatedResidence
+                loadDataSequentially() // Refresh visuals with updated data
+            }
         }
     }
     
-    // MARK: - Subcomponents
+    // MARK: - Custom UI Components
     
+    private var customInterestAlert: some View {
+        VStack(spacing: 25) {
+            // Animated Header Icon
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 70, height: 70)
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            
+            VStack(spacing: 12) {
+                Text("Request Sent")
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                
+                Text("A message will be sent to the owner about your interest. They will conduct an evaluation shortly.\n\nTrack your application in the **Interests** section of your profile.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal, 10)
+            }
+            
+            Button(action: {
+                withAnimation(.spring()) {
+                    showingInterestPopup = false
+                    isPresented = false // Fully close the detail view
+                }
+            }) {
+                Text("Got it")
+                    .font(.headline)
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.white)
+                    .cornerRadius(15)
+            }
+        }
+        .padding(30)
+        .frame(width: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(Color(red: 0.12, green: 0.12, blue: 0.15))
+                .shadow(color: .black.opacity(0.5), radius: 40)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 30)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        )
+    }
+
+    private var bottomActionBar: some View {
+        Button(action: {
+            withAnimation(.spring()) { showingInterestPopup = true }
+        }) {
+            Text("Contact Person")
+                .font(.headline).foregroundColor(.black)
+                .frame(maxWidth: .infinity).frame(height: 55)
+                .background(Color.white)
+                .cornerRadius(16)
+        }
+        .disabled(isLoading)
+    }
+    
+    private var editButton: some View {
+        Button(action: { showingEditSheet = true }) {
+            HStack {
+                Image(systemName: "pencil.and.outline")
+                Text("Edit My Property")
+            }
+            .font(.headline).foregroundColor(.black)
+            .frame(maxWidth: .infinity).frame(height: 55)
+            .background(Color.white)
+            .cornerRadius(16)
+        }
+    }
+
     private var imageHeaderSection: some View {
         ZStack {
             if isLoading {
-                Rectangle()
-                    .fill(Color.white.opacity(0.1))
-                    .shimmering()
+                Rectangle().fill(Color.white.opacity(0.1)).shimmering()
             } else {
-                ImageCarousel(images: allImages)
-                    .transition(.opacity)
+                ImageCarousel(images: allImages).transition(.opacity)
             }
         }
         .frame(height: 220)
@@ -85,22 +186,15 @@ struct ResidenceDetailPopup: View {
     private var titleAndPriceSection: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(residence.name)
-                    .font(.title2.bold())
-                    .foregroundColor(.white)
-                
+                Text(residence.name).font(.title2.bold()).foregroundColor(.white)
                 Label(residence.location, systemImage: "mappin.and.ellipse")
-                    .font(.footnote)
-                    .foregroundColor(.gray)
+                    .font(.footnote).foregroundColor(.gray)
             }
             Spacer()
             Text(residence.formattedPrice)
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(10)
+                .font(.headline).foregroundColor(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Color.white.opacity(0.1)).cornerRadius(10)
         }
     }
     
@@ -123,77 +217,44 @@ struct ResidenceDetailPopup: View {
         }
     }
 
-    // NEW: Description Section Implementation
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("About this property")
-                .font(.headline)
-                .foregroundColor(.white)
-            
+            Text("About this property").font(.headline).foregroundColor(.white)
             Text(residence.description.isEmpty ? "No description provided." : residence.description)
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
-                .lineSpacing(4)
+                .font(.subheadline).foregroundColor(.white.opacity(0.7)).lineSpacing(4)
         }
-    }
-    
-    private var bottomActionBar: some View {
-        Button(action: { }) {
-            Text("Contact Person")
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 55)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 36)
-        .disabled(isLoading)
     }
 
     private var closeButton: some View {
-        Button(action: {
-            withAnimation(.spring()) { isPresented = false }
-        }) {
-            Image(systemName: "xmark")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(.white)
-                .padding(10)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Circle())
+        Button(action: { withAnimation(.spring()) { isPresented = false } }) {
+            Image(systemName: "xmark").font(.system(size: 14, weight: .bold))
+                .foregroundColor(.white).padding(10)
+                .background(Color.black.opacity(0.5)).clipShape(Circle())
         }
         .padding(16)
     }
 
     private func loadDataSequentially() {
+        self.isLoading = true
         let residenceData = residence
         DispatchQueue.global(qos: .userInitiated).async {
             var base64Strings = [residenceData.mainImageBase64]
             base64Strings.append(contentsOf: residenceData.galleryImagesBase64)
             
-            let decodedImages = base64Strings.compactMap { base64String -> UIImage? in
-                guard let data = Data(base64Encoded: base64String) else { return nil }
+            let decodedImages = base64Strings.compactMap { str -> UIImage? in
+                guard let data = Data(base64Encoded: str) else { return nil }
                 return UIImage(data: data)
             }
             
-            usleep(200_000)
-            
             DispatchQueue.main.async {
                 self.allImages = decodedImages
-                withAnimation(.easeOut(duration: 0.5)) {
-                    self.isLoading = false
-                }
+                withAnimation(.easeOut(duration: 0.5)) { self.isLoading = false }
             }
         }
     }
 }
 
-// MARK: - Supporting Views & Helpers
+// MARK: - Reusable Styles & Helpers
 
 struct InfoItem: View {
     let icon: String
@@ -212,7 +273,6 @@ struct BlurView: UIViewRepresentable {
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
 
-// This extension fixes the "Extra argument 'corners'" error
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
@@ -237,5 +297,5 @@ struct RoundedCorner: Shape {
     return ResidenceDetailPopup(
         residence: sampleResidence,
         isPresented: .constant(true)
-    )
+    ).environment(AuthManager())
 }

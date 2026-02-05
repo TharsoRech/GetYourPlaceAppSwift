@@ -91,7 +91,9 @@ struct MyRents: View {
             }
         }
         .sheet(isPresented: $isShowingRegister) {
-            RegisterResidenceView(residences: $viewModel.publishResidences)
+            RegisterResidenceView(residenceToEdit: nil) { updatedResidence in
+                viewModel.handleSave(updatedResidence)
+            }
         }
     }
 }

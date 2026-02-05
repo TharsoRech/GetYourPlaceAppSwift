@@ -1,52 +1,138 @@
 import SwiftUI
+import PhotosUI
 
 struct LoginPopupView: View {
     @Binding var isPresented: Bool
     var canClose: Bool = false
     
     @Environment(AuthManager.self) private var auth
+    
+    // --- State Properties ---
+    enum AuthMode { case login, recovery, register }
+    @State private var mode: AuthMode = .login
+    
+    // Core Data
     @State private var email = ""
     @State private var password = ""
-    @State private var isRecoveryMode = false
+    @State private var name = ""
+    @State private var country = ""
+    @State private var bio = ""
     
+    // Profile Image Logic
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var base64Image: String?
+    @State private var profileUIImage: UIImage?
+
+    // --- Validation Logic ---
+    private var isEmailValid: Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        return NSPredicate(format: "SELF MATCHES %@", emailRegEx).evaluate(with: email)
+    }
+    
+    private var isFormComplete: Bool {
+        if mode == .register {
+            return isEmailValid && !password.isEmpty && !name.isEmpty && !country.isEmpty && !bio.isEmpty && base64Image != nil
+        } else if mode == .login {
+            return isEmailValid && !password.isEmpty
+        } else {
+            return isEmailValid
+        }
+    }
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.8)
                 .ignoresSafeArea()
                 .onTapGesture {
-                    if canClose {
-                        withAnimation(.spring()) { isPresented = false }
-                    }
+                    if canClose { closePopup() }
                 }
             
-            // Login Card
-            VStack(spacing: 25) {
+            VStack(spacing: 0) { // Changed to 0 to control spacing manually
                 headerSection
+                    .padding(.bottom, 20)
                 
-                VStack(spacing: 20) {
-                    CustomInputField(label: "Email", text: $email)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 18) {
+                        if mode == .register {
+                            imagePickerSection
+                            CustomInputField(label: "Full Name", text: $name)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            CustomInputField(label: "Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                            
+                            if !email.isEmpty && !isEmailValid {
+                                Text("Please enter a valid email address")
+                                    .font(.caption2)
+                                    .foregroundColor(.red.opacity(0.8))
+                                    .padding(.leading, 10)
+                            }
+                        }
+                        
+                        if mode != .recovery {
+                            CustomInputField(label: "Password", text: $password, isSecure: true)
+                        }
+                        
+                        if mode == .register {
+                            CustomInputField(label: "Country", text: $country)
+                            
+                            // Multiline Bio Field
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("About Me")
+                                        .font(.caption.bold())
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                    Text("Required")
+                                        .font(.caption2)
+                                        .foregroundColor(.orange)
+                                }
+                                
+                                TextEditor(text: $bio)
+                                        .frame(height: 100)
+                                        .scrollContentBackground(.hidden)
+                                        .background(Color.white.opacity(0.05))
+                                        .padding(4)
+                                        .cornerRadius(12)
+                                        .foregroundColor(.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                
+                                Text("This is the most important part of your profile for hosts to get to know you!")
+                                    .font(.caption2)
+                                    .italic()
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 5)
+                }
+                .frame(maxHeight: mode == .register ? 450 : 200) // Tighter height for login
+                
+                // Action Buttons Section
+                VStack(spacing: 15) {
+                    mainActionButton
+                        .disabled(!isFormComplete)
+                        .opacity(isFormComplete ? 1.0 : 0.5)
                     
-                    if !isRecoveryMode {
-                        CustomInputField(label: "Password", text: $password, isSecure: true)
+                    HStack {
+                        forgotPasswordButton
+                        Spacer()
+                        toggleModeButton
                     }
                 }
                 .padding(.horizontal, 24)
-                
-                VStack(spacing: 15) {
-                    mainActionButton
-                    
-                    forgotPasswordButton
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 10)
+                .padding(.vertical, 25) // Consistent spacing
             }
-            .padding(.vertical, 30)
             .background(Color(red: 0.1, green: 0.1, blue: 0.1))
             .cornerRadius(28)
             .overlay(alignment: .topTrailing) {
-                if canClose {
-                    closeButton
-                }
+                if canClose { closeButton }
             }
             .padding(.horizontal, 30)
         }
@@ -55,80 +141,114 @@ struct LoginPopupView: View {
     // MARK: - Subviews
     
     private var headerSection: some View {
-        VStack(spacing: 12) {
-            Circle()
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Image(systemName: isRecoveryMode ? "envelope.fill" : "lock.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(.white)
-                )
-            
-            Text(isRecoveryMode ? "Reset Password" : "Sign In")
+        VStack(spacing: 10) {
+            Text(mode == .register ? "Create Account" : (mode == .recovery ? "Reset" : "Sign In"))
                 .font(.title2.bold())
                 .foregroundColor(.white)
         }
-        .padding(.top, 10)
+        .padding(.top, 25)
     }
-    
-    private var closeButton: some View {
-        Button(action: {
-            withAnimation(.spring()) { isPresented = false }
-        }) {
-            Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.white.opacity(0.5))
-                .padding(12)
-                .background(Color.white.opacity(0.1))
-                .clipShape(Circle())
+
+    private var imagePickerSection: some View {
+        PhotosPicker(selection: $selectedItem, matching: .images) {
+            VStack {
+                if let image = profileUIImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 80, height: 80)
+                        .overlay(Image(systemName: "camera.fill").foregroundColor(.white))
+                }
+                Text("Add Profile Photo").font(.caption).foregroundColor(base64Image == nil ? .orange : .gray)
+            }
         }
-        .padding(16)
-    }
-    
-    private var forgotPasswordButton: some View {
-        Button(action: {
-            withAnimation(.easeInOut) { isRecoveryMode.toggle() }
-        }) {
-            Text(isRecoveryMode ? "Back to Login" : "Forgot Password?")
-                .font(.footnote)
-                .foregroundColor(.gray)
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    profileUIImage = UIImage(data: data)
+                    base64Image = data.base64EncodedString()
+                }
+            }
         }
     }
     
     private var mainActionButton: some View {
         Button(action: {
-            if isRecoveryMode {
-                print("Recovery email sent to \(email)")
-                withAnimation { isRecoveryMode = false }
-            } else {
-                // 1. Create the profile from the state variables
+            switch mode {
+            case .recovery:
+                withAnimation { mode = .login }
+            case .login:
                 let profile = UserProfile(email: email, password: password)
                 profile.role = .owner
-                // 2. Pass it to the login function
                 auth.login(userProfile: profile)
-                
-                withAnimation {
-                    isPresented = false
-                }
+                closePopup()
+            case .register:
+                let newProfile = UserProfile(
+                    name: name,
+                    email: email,
+                    password: password,
+                    country: country,
+                    bio: bio,
+                    role: .owner,
+                    base64Image: base64Image
+                )
+                auth.login(userProfile: newProfile)
+                closePopup()
             }
         }) {
-            Text(isRecoveryMode ? "Send Reset Link" : "Login")
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 55)
-                .background(Color.white.opacity(0.1))
+            Text(mode == .register ? "Register Account" : (mode == .recovery ? "Send Link" : "Login"))
+                .font(.headline).foregroundColor(.black)
+                .frame(maxWidth: .infinity).frame(height: 50)
+                .background(isFormComplete ? Color.white : Color.white.opacity(0.3))
                 .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
         }
+    }
+
+    private var toggleModeButton: some View {
+        Button(action: {
+            withAnimation(.easeInOut) {
+                mode = (mode == .register) ? .login : .register
+            }
+        }) {
+            Text(mode == .register ? "Already have an account?" : "Create Account")
+                .font(.footnote).foregroundColor(.white)
+        }
+    }
+
+    private var forgotPasswordButton: some View {
+        Button(action: {
+            withAnimation(.easeInOut) {
+                mode = (mode == .recovery) ? .login : .recovery
+            }
+        }) {
+            if mode != .register {
+                Text(mode == .recovery ? "Back to Login" : "Forgot Password?")
+                    .font(.footnote).foregroundColor(.gray)
+            }
+        }
+    }
+
+    private var closeButton: some View {
+        Button(action: closePopup) {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(.white.opacity(0.5))
+                .padding(10).background(Color.white.opacity(0.1)).clipShape(Circle())
+        }
+        .padding(16)
+    }
+
+    private func closePopup() {
+        withAnimation(.spring()) { isPresented = false }
     }
 }
 
-// MARK: - Previews
+
 
 #Preview("Closable (e.g. from Home)") {
     LoginPopupView(isPresented: .constant(true), canClose: true)

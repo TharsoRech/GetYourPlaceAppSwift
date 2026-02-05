@@ -44,8 +44,11 @@ class InterestedResidencesViewModel: ObservableObject {
 }
 
 #Preview {
-    let mockVM = InterestedResidencesViewModel()
-    
-    InterestedResidencesView(viewModel: mockVM)
-        .environment(AuthManager.mock(role: .owner))
+    InterestedResidencesView(
+        viewModel: InterestedResidencesViewModel(),
+        onSelect: { residence in
+            print("Preview selected: \(residence.name)")
+        }
+    )
+    .environment(AuthManager.mock(role: .renter))
 }

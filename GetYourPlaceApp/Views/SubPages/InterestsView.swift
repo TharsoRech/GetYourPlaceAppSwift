@@ -5,6 +5,9 @@ struct InterestsView: View {
     @StateObject var favoritesVM = FavoriteResidencesViewModel()
     @StateObject var interestedVM = InterestedResidencesViewModel()
     
+    // Move the selection state here for full-screen coverage
+    @State private var selectedResidence: Residence? = nil
+    
     init() {
         UISegmentedControl.appearance().selectedSegmentTintColor = .white
         UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
@@ -12,26 +15,49 @@ struct InterestsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $selectedTab) {
-                Text("Interested").tag(0)
-                Text("Favorites").tag(1)
-            }
-            .pickerStyle(.segmented)
-            .padding()
-            .background(Color(red: 0.1, green: 0.1, blue: 0.1))
+        ZStack {
+            Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea()
             
-            // 2. The Content Area
-            TabView(selection: $selectedTab) {
-                InterestedResidencesView(viewModel: interestedVM)
-                    .tag(0)
+            VStack(spacing: 0) {
+                Picker("", selection: $selectedTab) {
+                    Text("Interested").tag(0)
+                    Text("Favorites").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding()
+                .background(Color(red: 0.1, green: 0.1, blue: 0.1))
                 
-                FavoriteResidences(viewModel: favoritesVM)
+                TabView(selection: $selectedTab) {
+                    // Pass the selection logic up to this parent
+                    InterestedResidencesView(viewModel: interestedVM) { res in
+                        selectedResidence = res
+                    }
+                    .tag(0)
+                    
+                    FavoriteResidences(viewModel: favoritesVM) { res in
+                        selectedResidence = res
+                    }
                     .tag(1)
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
             }
-            .tabViewStyle(.page(indexDisplayMode: .never)) // Allows swiping without bottom dots
+            
+            // FULL SCREEN POPUP
+            if let residence = selectedResidence {
+                ResidenceDetailPopup(
+                    residence: residence,
+                    isPresented: Binding(
+                        get: { selectedResidence != nil },
+                        set: { if !$0 { selectedResidence = nil } }
+                    )
+                )
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .scale(scale: 0.9)),
+                    removal: .opacity.combined(with: .scale(scale: 1.1))
+                ))
+                .zIndex(100)
+            }
         }
-        .background(Color(red: 0.1, green: 0.1, blue: 0.1).ignoresSafeArea())
     }
 }
 
