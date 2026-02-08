@@ -8,49 +8,65 @@ struct ResidenceDetailPopup: View {
     @State private var allImages: [UIImage] = []
     @State private var isLoading = true
     @State private var showingEditSheet = false
-    
-    // Custom Styled Popup State
     @State private var showingInterestPopup = false
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // 1. Main Background Dimmer
                 Color.black.opacity(0.8)
                     .ignoresSafeArea()
                     .onTapGesture {
-                        // Prevent closing by mistake if the interest popup is active
                         if !showingInterestPopup {
                             withAnimation(.spring()) { isPresented = false }
                         }
                     }
                 
-                // 2. Main Detail Card
                 VStack(spacing: 0) {
                     imageHeaderSection
                     
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 20) {
                             titleAndPriceSection
+                            
+                            // 1. Rating Badge
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill").foregroundColor(.yellow)
+                                Text(String(format: "%.1f", residence.rating)).fontWeight(.bold).foregroundColor(.white)
+                                Text("(Reviews)").foregroundColor(.white)
+                            }
+                            .font(.caption)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(Color.white.opacity(0.1)).cornerRadius(6)
+                            
                             Divider().background(Color.white.opacity(0.2))
-                            infoGridSection
+                            
+                            // 2. Info Grid (Including Pets)
+                            VStack(spacing: 18) {
+                                HStack {
+                                    InfoItem(icon: "bed.double.fill", text: residence.formattedNumberOfBeds)
+                                    Spacer()
+                                    InfoItem(icon: "shower.fill", text: residence.formattedNumberOfbaths)
+                                    Spacer()
+                                    InfoItem(icon: "square.split.2x2.fill", text: "\(Int(residence.squareFootage)) sqft")
+                                }
+                                HStack {
+                                    InfoItem(icon: "car.fill", text: residence.formattedNumberOfGarages)
+                                    Spacer()
+                                    InfoItem(icon: "door.left.hand.open", text: residence.formattedNumberOfRooms)
+                                    Spacer()
+                                    InfoItem(icon: "pawprint.fill", text: residence.petsStatus)
+                                }
+                            }
+                            
                             Divider().background(Color.white.opacity(0.2))
+                            
                             descriptionSection
                         }
                         .padding(24)
                         .redacted(reason: isLoading ? .placeholder : [])
                     }
                     
-                    // Footer: Changes based on ownership
-                    HStack(spacing: 12) {
-                        if residence.isMine {
-                            editButton
-                        } else {
-                            bottomActionBar
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 36)
+                    footerActions
                 }
                 .frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.8)
                 .background(
@@ -64,18 +80,8 @@ struct ResidenceDetailPopup: View {
                 .overlay(alignment: .topTrailing) { closeButton }
                 .shadow(color: .black.opacity(0.6), radius: 30, x: 0, y: 15)
                 
-                // 3. Custom Glass Interest Popup (The "Alert")
                 if showingInterestPopup {
-                    Color.black.opacity(0.4)
-                        .ignoresSafeArea()
-                        .transition(.opacity)
-                    
-                    customInterestAlert
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.8).combined(with: .opacity),
-                            removal: .opacity
-                        ))
-                        .zIndex(2)
+                    interestAlertOverlay
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -83,105 +89,14 @@ struct ResidenceDetailPopup: View {
         .ignoresSafeArea()
         .onAppear { loadDataSequentially() }
         .sheet(isPresented: $showingEditSheet) {
-            RegisterResidenceView(residenceToEdit: residence) { updatedResidence in
-                self.residence = updatedResidence
-                loadDataSequentially() // Refresh visuals with updated data
+            RegisterResidenceView(residenceToEdit: residence) { updated in
+                self.residence = updated
+                loadDataSequentially()
             }
         }
     }
     
-    // MARK: - Custom UI Components
-    
-    private var customInterestAlert: some View {
-        VStack(spacing: 25) {
-            // Animated Header Icon
-            ZStack {
-                Circle()
-                    .fill(Color.white.opacity(0.1))
-                    .frame(width: 70, height: 70)
-                Image(systemName: "paperplane.fill")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            
-            VStack(spacing: 12) {
-                Text("Request Sent")
-                    .font(.title3.bold())
-                    .foregroundColor(.white)
-                
-                Text("A message will be sent to the owner about your interest. They will conduct an evaluation shortly.\n\nTrack your application in the **Interests** section of your profile.")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.horizontal, 10)
-            }
-            
-            Button(action: {
-                withAnimation(.spring()) {
-                    showingInterestPopup = false
-                    isPresented = false // Fully close the detail view
-                }
-            }) {
-                Text("Got it")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.white)
-                    .cornerRadius(15)
-            }
-        }
-        .padding(30)
-        .frame(width: 320)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color(red: 0.12, green: 0.12, blue: 0.15))
-                .shadow(color: .black.opacity(0.5), radius: 40)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-        )
-    }
-
-    private var bottomActionBar: some View {
-        Button(action: {
-            withAnimation(.spring()) { showingInterestPopup = true }
-        }) {
-            Text("Contact Person")
-                .font(.headline).foregroundColor(.black)
-                .frame(maxWidth: .infinity).frame(height: 55)
-                .background(Color.white)
-                .cornerRadius(16)
-        }
-        .disabled(isLoading)
-    }
-    
-    private var editButton: some View {
-        Button(action: { showingEditSheet = true }) {
-            HStack {
-                Image(systemName: "pencil.and.outline")
-                Text("Edit My Property")
-            }
-            .font(.headline).foregroundColor(.black)
-            .frame(maxWidth: .infinity).frame(height: 55)
-            .background(Color.white)
-            .cornerRadius(16)
-        }
-    }
-
-    private var imageHeaderSection: some View {
-        ZStack {
-            if isLoading {
-                Rectangle().fill(Color.white.opacity(0.1)).shimmering()
-            } else {
-                ImageCarousel(images: allImages).transition(.opacity)
-            }
-        }
-        .frame(height: 220)
-        .clipped()
-        .cornerRadius(28, corners: [.topLeft, .topRight])
-    }
+    // MARK: - Components
     
     private var titleAndPriceSection: some View {
         HStack(alignment: .top) {
@@ -198,25 +113,37 @@ struct ResidenceDetailPopup: View {
         }
     }
     
-    private var infoGridSection: some View {
-        VStack(spacing: 15) {
-            HStack {
-                InfoItem(icon: "bed.double.fill", text: residence.formattedNumberOfBeds)
-                Spacer()
-                InfoItem(icon: "shower.fill", text: residence.formattedNumberOfbaths)
-                Spacer()
-                InfoItem(icon: "square.split.2x2.fill", text: "\(Int(residence.squareFootage)) sqft")
-            }
-            HStack {
-                InfoItem(icon: "car.fill", text: residence.formattedNumberOfGarages)
-                Spacer()
-                InfoItem(icon: "door.left.hand.open", text: residence.formattedNumberOfRooms)
-                Spacer()
-                InfoItem(icon: "star.fill", text: String(format: "%.1f Rating", residence.rating))
+    private var footerActions: some View {
+        HStack(spacing: 12) {
+            if residence.isMine {
+                Button(action: { showingEditSheet = true }) {
+                    Label("Edit My Property", systemImage: "pencil").frame(maxWidth: .infinity).frame(height: 55)
+                        .background(Color.white).foregroundColor(.black).cornerRadius(16).bold()
+                }
+            } else {
+                Button(action: { withAnimation(.spring()) { showingInterestPopup = true } }) {
+                    Text("Contact Person").font(.headline).foregroundColor(.black)
+                        .frame(maxWidth: .infinity).frame(height: 55)
+                        .background(Color.white).cornerRadius(16)
+                }
             }
         }
+        .padding(.horizontal, 24).padding(.bottom, 36)
     }
 
+    private var imageHeaderSection: some View {
+        ZStack {
+            if isLoading {
+                Rectangle().fill(Color.white.opacity(0.1))
+            } else if let uiImage = Data(base64Encoded: residence.mainImageBase64).flatMap(UIImage.init) {
+                Image(uiImage: uiImage).resizable().scaledToFill()
+            } else {
+                Color.gray.opacity(0.3)
+            }
+        }
+        .frame(height: 220).clipped().cornerRadius(28, corners: [.topLeft, .topRight])
+    }
+    
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("About this property").font(.headline).foregroundColor(.white)
@@ -230,30 +157,34 @@ struct ResidenceDetailPopup: View {
             Image(systemName: "xmark").font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white).padding(10)
                 .background(Color.black.opacity(0.5)).clipShape(Circle())
+        }.padding(16)
+    }
+
+    private var interestAlertOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4).ignoresSafeArea()
+            VStack(spacing: 25) {
+                Image(systemName: "paperplane.fill").font(.largeTitle).foregroundColor(.white)
+                Text("Request Sent").font(.title3.bold()).foregroundColor(.white)
+                Text("A message will be sent to the owner about your interest. They will conduct an evaluation shortly.\n\nTrack your application in the **Interests** section of your profile.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal, 10)
+                Button("Got it") { withAnimation { showingInterestPopup = false; isPresented = false } }
+                    .frame(maxWidth: .infinity).frame(height: 50).background(Color.white).foregroundColor(.black).cornerRadius(15).bold()
+            }
+            .padding(30).frame(width: 320).background(Color(red: 0.12, green: 0.12, blue: 0.15)).cornerRadius(30)
         }
-        .padding(16)
     }
 
     private func loadDataSequentially() {
         self.isLoading = true
-        let residenceData = residence
-        DispatchQueue.global(qos: .userInitiated).async {
-            var base64Strings = [residenceData.mainImageBase64]
-            base64Strings.append(contentsOf: residenceData.galleryImagesBase64)
-            
-            let decodedImages = base64Strings.compactMap { str -> UIImage? in
-                guard let data = Data(base64Encoded: str) else { return nil }
-                return UIImage(data: data)
-            }
-            
-            DispatchQueue.main.async {
-                self.allImages = decodedImages
-                withAnimation(.easeOut(duration: 0.5)) { self.isLoading = false }
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation { self.isLoading = false }
         }
     }
 }
-
 // MARK: - Reusable Styles & Helpers
 
 struct InfoItem: View {

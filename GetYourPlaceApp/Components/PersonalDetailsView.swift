@@ -9,6 +9,7 @@ struct PersonalDetailsView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     CustomInputField(label: "Full Name", text: $profile.name.toUnwrapped)
+                    CustomInputField(label: "Profession", text: $profile.profession.toUnwrapped) // Added here
                     CustomDescriptionField(label: "About Me", text: $profile.bio.toUnwrapped)
                     CustomDropdownField(label: "Date of Birth", value: $profile.dob.toUnwrapped)
                     CustomDropdownField(label: "Country/Region", value: $profile.country.toUnwrapped)

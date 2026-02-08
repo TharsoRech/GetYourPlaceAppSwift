@@ -4,7 +4,7 @@ import SwiftUI
 class Residence: Identifiable {
     let id = UUID()
     var name: String
-    var description: String // New Property
+    var description: String
     var address: String
     var location: String
     var type: String
@@ -15,6 +15,7 @@ class Residence: Identifiable {
     var squareFootage: Double
     var hasGarage: Bool
     var numberOfGarages: Int
+    var acceptPets: Bool
     var rating: Double = 0.0
     var createdAt: Date = Date()
     var isPublished: Bool
@@ -33,14 +34,14 @@ class Residence: Identifiable {
         return formatter.string(from: NSNumber(value: price)) ?? "$\(price)"
     }
     
-    var formattedLocation: String { "Location: \(location), \(address)" }
+    var formattedLocation: String { "\(location), \(address)" }
     var formattedNumberOfBeds: String { "\(numberOfBeds) Beds" }
     var formattedNumberOfRooms: String { "\(numberOfRooms) Rooms" }
     var formattedNumberOfGarages: String { "\(numberOfGarages) Garage" }
     var formattedNumberOfbaths: String { "\(baths) Baths" }
+    var petsStatus: String { acceptPets ? "Pets Allowed" : "No Pets" }
     
-    // MARK: - Initializer Updated
-    init(name: String, description: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int, rating: Double, createdAt: Date, mainImageBase64: String, galleryImagesBase64: [String], favorite: Bool, isPublished: Bool = false,isMine: Bool = false) {
+    init(name: String, description: String, address: String, location: String, type: String, price: Double, numberOfRooms: Int, numberOfBeds: Int, baths: Int, squareFootage: Double, hasGarage: Bool, numberOfGarages: Int, acceptPets: Bool, rating: Double, createdAt: Date, mainImageBase64: String, galleryImagesBase64: [String], favorite: Bool, isPublished: Bool = false, isMine: Bool = false) {
         self.name = name
         self.description = description
         self.address = address
@@ -53,6 +54,7 @@ class Residence: Identifiable {
         self.squareFootage = squareFootage
         self.hasGarage = hasGarage
         self.numberOfGarages = numberOfGarages
+        self.acceptPets = acceptPets
         self.mainImageBase64 = mainImageBase64
         self.galleryImagesBase64 = galleryImagesBase64
         self.rating = rating
@@ -62,6 +64,7 @@ class Residence: Identifiable {
         self.isMine = isMine
     }
     
+    // MARK: - Mocks
     static var mock: Residence {
         Residence(
             name: "Modern Villa",
@@ -76,15 +79,16 @@ class Residence: Identifiable {
             squareFootage: 3500.0,
             hasGarage: true,
             numberOfGarages: 1,
+            acceptPets: true,
             rating: 5.0,
             createdAt: Date(),
-            mainImageBase64: "",
+            mainImageBase64: "house1".asAssetBase64,
             galleryImagesBase64: [],
             favorite: false
         )
     }
     
-    static var mocks: [Residence] {  [
+    static var mocks: [Residence] { [
         Residence(
             name: "Modern Villa",
             description: "A beautiful modern villa with sea views and a private pool.",
@@ -98,37 +102,39 @@ class Residence: Identifiable {
             squareFootage: 3500.0,
             hasGarage: true,
             numberOfGarages: 1,
+            acceptPets: true,
             rating: 5.0,
-            createdAt: Date().addingTimeInterval(-10000),
-            mainImageBase64: "house1".asAssetBase64, // Nome do Asset
-            galleryImagesBase64: ["house1".asAssetBase64, "house1".asAssetBase64],
+            createdAt: Date(),
+            mainImageBase64: "house2".asAssetBase64,
+            galleryImagesBase64: [],
             favorite: false
         ),
         Residence(
             name: "Skyline Apartment",
-            description: "A beautiful modern villa with sea views and a private pool.",
+            description: "Luxury high-rise living with floor-to-ceiling windows.",
             address: "888 Central Ave",
             location: "New York, NY",
-            type: "House",
+            type: "Apartment",
             price: 950000.0,
             numberOfRooms: 3,
             numberOfBeds: 1,
             baths: 1,
             squareFootage: 850.0,
             hasGarage: false,
-            numberOfGarages: 1,
-            rating: 3.0,
-            createdAt: Date().addingTimeInterval(-20000),
-            mainImageBase64: "house2".asAssetBase64,
-            galleryImagesBase64: ["house2".asAssetBase64],
-            favorite: false
+            numberOfGarages: 0,
+            acceptPets: false,
+            rating: 4.5,
+            createdAt: Date(),
+            mainImageBase64: "house3".asAssetBase64,
+            galleryImagesBase64: [],
+            favorite: true
         ),
         Residence(
             name: "Cozy Cottage",
-            description: "A beautiful modern villa with sea views and a private pool.",
+            description: "A rustic getaway tucked in the mountains.",
             address: "42 Forest Road",
             location: "Aspen, CO",
-            type: "Apartment",
+            type: "House",
             price: 1200000.0,
             numberOfRooms: 5,
             numberOfBeds: 3,
@@ -136,12 +142,13 @@ class Residence: Identifiable {
             squareFootage: 1800.0,
             hasGarage: true,
             numberOfGarages: 1,
-            rating: 4.0,
+            acceptPets: true,
+            rating: 4.8,
             createdAt: Date(),
             mainImageBase64: "house3".asAssetBase64,
-            galleryImagesBase64: [] ,
+            galleryImagesBase64: [],
             favorite: false,
             isMine: true
         )
-    ] }
+    ]}
 }

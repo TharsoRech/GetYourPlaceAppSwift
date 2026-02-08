@@ -56,14 +56,22 @@ struct PublicProfileView: View {
                     .shimmering()
                 
                 VStack(spacing: 8) {
+                    // Name
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.white.opacity(0.1))
                         .frame(width: 150, height: 24)
                         .shimmering()
                     
+                    // Profession
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.white.opacity(0.1))
-                        .frame(width: 100, height: 16)
+                        .frame(width: 120, height: 18)
+                        .shimmering()
+                    
+                    // Country
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 100, height: 14)
                         .shimmering()
                 }
             }
@@ -116,14 +124,25 @@ struct PublicProfileView: View {
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 2))
             
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Text(profile.name ?? "User")
                     .font(.title2.bold())
                     .foregroundColor(.white)
                 
-                Text(profile.country ?? "Location not set")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                // --- Professional Field Display ---
+                if let profession = profile.profession, !profession.isEmpty {
+                    Text(profession)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(.blue.opacity(0.9)) // Subtle color to distinguish it
+                }
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .font(.caption2)
+                    Text(profile.country ?? "Location not set")
+                }
+                .font(.subheadline)
+                .foregroundColor(.gray)
             }
         }
     }
@@ -204,7 +223,8 @@ struct PublicProfileView: View {
         email: "alex@example.com",
         country: "United Kingdom",
         bio: "Avid traveler and architecture lover. I've hosted over 50 guests.",
-        role: .owner
+        role: .owner,
+        profession: "Senior Architect" // Added to mock
     )
     
     return PublicProfileView(profile: mockProfile)

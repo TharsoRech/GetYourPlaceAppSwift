@@ -3,9 +3,7 @@ import Observation
 
 @Observable
 class UserProfile: Codable, Identifiable {
-    // 1. Add id for Identifiable conformance
     var id: UUID = UUID()
-    
     var name: String?
     var email: String?
     var password: String?
@@ -14,8 +12,8 @@ class UserProfile: Codable, Identifiable {
     var bio: String?
     var role: UserRole?
     var base64Image: String?
+    var profession: String? // Added Profession
 
-    // 2. Updated Initializer to accept optional id
     init(
         id: UUID = UUID(),
         name: String? = nil,
@@ -25,7 +23,8 @@ class UserProfile: Codable, Identifiable {
         country: String? = nil,
         bio: String? = nil,
         role: UserRole? = nil,
-        base64Image: String? = nil
+        base64Image: String? = nil,
+        profession: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -36,19 +35,16 @@ class UserProfile: Codable, Identifiable {
         self.bio = bio
         self.role = role
         self.base64Image = base64Image
+        self.profession = profession
     }
 
-    // 3. Exclude 'id' from CodingKeys so it doesn't try to send/receive it from JSON
     enum CodingKeys: String, CodingKey {
-        case name, email, password, dob, country, bio, role, base64Image
+        case name, email, password, dob, country, bio, role, base64Image, profession
     }
 
-    // 4. Decodable Implementation
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // We initialize id with a new value since it's not in the JSON
         self.id = UUID()
-        
         name = try container.decodeIfPresent(String.self, forKey: .name)
         email = try container.decodeIfPresent(String.self, forKey: .email)
         password = try container.decodeIfPresent(String.self, forKey: .password)
@@ -57,9 +53,9 @@ class UserProfile: Codable, Identifiable {
         bio = try container.decodeIfPresent(String.self, forKey: .bio)
         role = try container.decodeIfPresent(UserRole.self, forKey: .role)
         base64Image = try container.decodeIfPresent(String.self, forKey: .base64Image)
+        profession = try container.decodeIfPresent(String.self, forKey: .profession)
     }
 
-    // 5. Encodable Implementation
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
@@ -70,9 +66,9 @@ class UserProfile: Codable, Identifiable {
         try container.encode(bio, forKey: .bio)
         try container.encode(role, forKey: .role)
         try container.encode(base64Image, forKey: .base64Image)
+        try container.encode(profession, forKey: .profession)
     }
     
-    /// Converts the base64 string into a SwiftUI Image for easy display
     var profileImage: Image {
         if let base64String = base64Image,
            let data = Data(base64Encoded: base64String),
@@ -89,9 +85,10 @@ class UserProfile: Codable, Identifiable {
             password: "secured_password_123",
             dob: "1992-11-24",
             country: "United Kingdom",
-            bio: "Avid traveler, architecture lover, and host of three properties in London.",
+            bio: "Avid traveler, architecture lover.",
             role: .owner,
-            base64Image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+            base64Image: nil,
+            profession: "Architect"
         )
     }
 }
